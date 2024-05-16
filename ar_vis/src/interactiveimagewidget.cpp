@@ -156,53 +156,94 @@ void InteractiveImageWidget::initializeGL() {
     glCheckError();   // 检查OpenGL错误
 }
 
+/**
+ * 处理图像交互控件的鼠标移动事件。
+ * @param event 指向QMouseEvent的指针，包含了鼠标移动事件的详细信息。
+ */
 void InteractiveImageWidget::mouseMoveEvent(QMouseEvent* event) {
 #if 0
+    // 计算鼠标移动的位移
     QPointF delta = event->position() - mouse_prev_pos;
 
+    // 当左键按下时，调整图像的平移量
     if (event->buttons() & Qt::LeftButton) {
       adjustTranslation(delta / image_scale);
-      updateImageTranslation();
-      update();
+      updateImageTranslation(); // 更新图像的平移状态
+      update(); // 触发控件的更新
     }
+    // 更新鼠标先前的位置
     mouse_prev_pos = event->pos();
 #endif
 }
 
+/**
+ * 处理鼠标滚轮事件的函数。
+ * 当鼠标在图像上使用滚轮时，此函数将被调用，用于改变图像的缩放级别和/或平移。
+ *
+ * @param event 指向QWheelEvent对象的指针，包含了滚轮事件的详细信息。
+ */
 void InteractiveImageWidget::wheelEvent(QWheelEvent* event) {
 #if 0
+    // 计算缩放变化量
     float delta_scale = event->angleDelta().y() / 12000.0;
+    // 获取鼠标位置
     QPointF mouse_pos = event->position();
+    // 计算当前图像控件中心位置
     QPointF widget_center = QPointF((float)this->width() / 2, (float)this->height() / 2);
+    // 计算当前图像的中心位置（考虑了图像的平移）
     QPointF image_center = widget_center + image_translation;
+    // 计算鼠标位置相对于图像中心的偏移量
     QPointF delta_trans = mouse_pos - image_center;
 
+    // 根据鼠标位置和滚轮事件调整图像的缩放和平移
     adjustScale(delta_scale);
     adjustTranslation(-delta_trans * delta_scale);
+    // 更新图像的平移量
     updateImageTranslation();
 
+    // 触发图像更新
     update();
 #endif
 }
 
+/**
+ * 处理图像控件的鼠标双击事件。
+ *
+ * 当用户双击图像时，此函数将重置图像的平移和缩放状态，将图像恢复到原始位置和大小。
+ * 然后调用updateImageTranslation()更新图像的平移状态，并触发界面更新。
+ *
+ * @param event 指向鼠标事件的指针，包含了鼠标双击的详细信息。
+ */
 void InteractiveImageWidget::mouseDoubleClickEvent(QMouseEvent* event) {
+    // 重置图像的平移和缩放状态，以恢复到初始状态
     image_translation = QPointF(0, 0);
     image_scale       = 1;
 
+    // 更新图像的平移状态
     updateImageTranslation();
 
+    // 触发界面的更新
     update();
 }
 
+/**
+ * 处理键盘按下事件的函数。
+ *
+ * @param event 指向QKeyEvent的指针，包含了键盘事件的详细信息。
+ */
 void InteractiveImageWidget::keyPressEvent(QKeyEvent* event) {
-    glCheckError();
-    if (!key_board_input)
+    glCheckError();         // 检查OpenGL错误。
+    if (!key_board_input)   // 如果键盘输入未启用，则直接返回。
         return;
+    // 根据按下的键执行相应的操作。
     if (event->key() == Qt::Key_Left) {
-        drive_assistant->adjustLeftWheelDeltaTheta(-0.01);
+        drive_assistant->adjustLeftWheelDeltaTheta(
+            -0.01);   // 向左调整车轮角度。
     } else if (event->key() == Qt::Key_Right) {
-        drive_assistant->adjustLeftWheelDeltaTheta(0.01);
+        drive_assistant->adjustLeftWheelDeltaTheta(
+            0.01);   // 向右调整车轮角度。
     } else if (event->key() == Qt::Key_V) {
+        // 打印OpenGL版本信息。
         QOpenGLFunctions* gl_function_ptr =
             QOpenGLContext::currentContext()->functions();
 
@@ -214,37 +255,62 @@ void InteractiveImageWidget::keyPressEvent(QKeyEvent* event) {
                  << (const char*)gl_function_ptr->glGetString(GL_VERSION);
         qDebug() << "OpenGL Version Major: " << major << "Minor :" << minor;
     } else if (event->key() == Qt::Key_A) {
-        this->adjustTrackDelta(-0.1, 0, 0);
+        this->adjustTrackDelta(-0.1, 0, 0);   // 向左调整轨道。
     } else if (event->key() == Qt::Key_D) {
-        this->adjustTrackDelta(0.1, 0, 0);
+        this->adjustTrackDelta(0.1, 0, 0);   // 向右调整轨道。
     } else if (event->key() == Qt::Key_W) {
-        this->adjustTrackDelta(0, 0.1, 0);
+        this->adjustTrackDelta(0, 0.1, 0);   // 向前调整轨道。
     } else if (event->key() == Qt::Key_S) {
-        this->adjustTrackDelta(0, -0.1, 0);
+        this->adjustTrackDelta(0, -0.1, 0);   // 向后调整轨道。
     } else if (event->key() == Qt::Key_R) {
-        this->adjustTrackDelta(0, 0, 0.02);
+        this->adjustTrackDelta(0, 0, 0.02);   // 提升轨道高度。
     } else if (event->key() == Qt::Key_F) {
-        this->adjustTrackDelta(0, 0, -0.02);
+        this->adjustTrackDelta(0, 0, -0.02);   // 降低轨道高度。
     } else if (event->key() == Qt::Key_O) {
-        this->drive_assistant->saveTrackDelta();
+        this->drive_assistant->saveTrackDelta();   // 保存当前轨道变化。
     }
-    update();
+    update();   // 更新显示。
 }
 
+/**
+ * 调整图像的平移量
+ *
+ * 本函数用于根据给定的位移量调整图像的平移状态。平移量是通过累加给定的位移量（delta）到当前的平移量（image_translation）上来实现的。
+ *
+ * @param delta 图像平移的增量，是一个QPointF类型，包含了x和y方向的位移量。
+ */
 void InteractiveImageWidget::adjustTranslation(const QPointF& delta) {
-    image_translation += delta;
+    image_translation += delta;   // 累加平移量
 }
 
+/**
+ * 调整图像的缩放比例。
+ *
+ * 该函数用于根据给定的增量值调整当前图像的缩放比例。缩放比例会以当前比例为基础，
+ * 增加指定的增量值（delta）。增量值为正数时，图像放大；为负数时，图像缩小。
+ *
+ * @param delta
+ * 缩放比例的增量值。该值将被加到当前缩放比例上，以调整新的缩放比例。
+ *              增量值的正负决定了缩放的方向（放大或缩小）。
+ */
 void InteractiveImageWidget::adjustScale(float delta) {
-    image_scale *= 1 + delta;
+    image_scale *= 1 + delta;   // 根据增量值调整图像的缩放比例。
 }
 
+/**
+ * 更新图像的平移变换。
+ * 此函数不接受参数，也不返回任何值。
+ * 它通过修改变换矩阵来实现图像在窗口中的平移和缩放。
+ */
 void InteractiveImageWidget::updateImageTranslation() {
+    // 重置变换矩阵为单位矩阵
     transform_matrix.setToIdentity();
-    // widgt size -> [-1, 1]
+
+    // 根据图像的平移量和当前窗口的大小，更新变换矩阵以实现平移
     transform_matrix.translate(image_translation.x() * 2.0 / this->width(),
                                -image_translation.y() * 2.0 / this->height());
 
+    // 应用图像的缩放因子，更新变换矩阵以实现缩放
     transform_matrix.scale(image_scale, image_scale);
 }
 void InteractiveImageWidget::paintGL() {

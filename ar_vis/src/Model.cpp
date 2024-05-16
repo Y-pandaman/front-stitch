@@ -164,59 +164,51 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices,
       textures(std::move(_textures)) { }
 
 /**
- * @brief 设置Mesh的渲染所需要的数据和对象
- *
- * 本函数用于初始化Mesh的渲染，包括绑定和配置顶点数组对象（VAO）、顶点缓冲对象（VBO）和索引缓冲对象（EBO），
- * 以及启用和配置着色器中的属性数组。
- *
- * @param _qvbo 指向QOpenGLBuffer的指针，用于存储顶点数据
- * @param _qvao 指向QOpenGLVertexArrayObject的指针，用于配置和绑定顶点属性
- * @param _qveo 指向QOpenGLBuffer的指针，用于存储索引数据
- * @param shader 指向ShaderToTexture的指针，包含着色器程序，用于渲染
+ * @brief 设置Mesh的渲染数据，包括顶点缓冲对象（VBO）、顶点数组对象（VAO）、索引缓冲对象（EBO）和着色器。
+ * @param _qvbo 指向QOpenGLBuffer的指针，用于存储顶点数据。
+ * @param _qvao 指向QOpenGLVertexArrayObject的指针，用于简化渲染过程中的状态设置。
+ * @param _qveo 指向QOpenGLBuffer的指针，用于存储索引数据。
+ * @param shader 指向ShaderToTexture的指针，包含用于渲染的着色器程序。
  */
 void Mesh::setupMesh(QOpenGLBuffer* _qvbo, QOpenGLVertexArrayObject* _qvao,
                      QOpenGLBuffer* _qveo, ShaderToTexture* shader) {
-    qvao = _qvao;     // Assign the vertex array object
-    qvao->create();   // Create the vertex array object
-    qvbo = _qvbo;     // Assign the vertex buffer object
-    qvbo->create();   // Create the vertex buffer object
-    qebo = _qveo;     // Assign the index buffer object
-    qebo->create();   // Create the index buffer object
+    // 初始化VAO、VBO和EBO
+    qvao = _qvao;
+    qvao->create();
+    qvbo = _qvbo;
+    qvbo->create();
+    qebo = _qveo;
+    qebo->create();
 
-    qvao->bind();   // Bind the vertex array object
-    qvbo->bind();   // Bind the vertex buffer object
-    qvbo->setUsagePattern(QOpenGLBuffer::StaticDraw);   // Set the usage pattern
-                                                        // of the vertex buffer
-    qvbo->allocate(vertices.data(),
-                   vertices.size() *
-                       sizeof(Vertex));   // Allocate memory for vertices
+    // 绑定VAO，准备设置顶点属性
+    qvao->bind();
+    qvbo->bind();
+    // 设置顶点缓冲的使用模式为StaticDraw，并分配内存
+    qvbo->setUsagePattern(QOpenGLBuffer::StaticDraw);
+    qvbo->allocate(vertices.data(), vertices.size() * sizeof(Vertex));
 
-    // Bind the shader program and enable attribute arrays
+    // 绑定着色器程序，并设置顶点属性
     shader->shader_program_.bind();
+    // 启用并设置位置属性
     shader->shader_program_.enableAttributeArray("aPos");
+    shader->shader_program_.setAttributeBuffer("aPos", GL_FLOAT, 0, 3,
+                                               8 * sizeof(float));
+    // 启用并设置法向量属性
+    shader->shader_program_.enableAttributeArray("aNormal");
     shader->shader_program_.setAttributeBuffer(
-        "aPos", GL_FLOAT, 0, 3,
-        8 * sizeof(float));   // Configure position attribute
-    shader->shader_program_.enableAttributeArray(
-        "aNormal");   // Enable normal attribute
+        "aNormal", GL_FLOAT, 3 * sizeof(float), 3, 8 * sizeof(float));
+    // 启用并设置纹理坐标属性
+    shader->shader_program_.enableAttributeArray("aTexCoords");
     shader->shader_program_.setAttributeBuffer(
-        "aNormal", GL_FLOAT, 3 * sizeof(float), 3,
-        8 * sizeof(float));   // Configure normal attribute
-    shader->shader_program_.enableAttributeArray(
-        "aTexCoords");   // Enable texture coordinate attribute
-    shader->shader_program_.setAttributeBuffer(
-        "aTexCoords", GL_FLOAT, 6 * sizeof(float), 2,
-        8 * sizeof(float));   // Configure texture coordinate attribute
-    qebo->bind();             // Bind the index buffer object
-    qebo->setUsagePattern(QOpenGLBuffer::StaticDraw);   // Set the usage pattern
-                                                        // of the index buffer
-    qebo->allocate(indices.data(),
-                   indices.size() *
-                       sizeof(uint));   // Allocate memory for indices
+        "aTexCoords", GL_FLOAT, 6 * sizeof(float), 2, 8 * sizeof(float));
+    // 绑定EBO并设置使用模式及内存分配
+    qebo->bind();
+    qebo->setUsagePattern(QOpenGLBuffer::StaticDraw);
+    qebo->allocate(indices.data(), indices.size() * sizeof(uint));
 
-    // Release resources to prevent memory leaks or conflicts
-    qvao->release();                     // Release the vertex array object
-    qvbo->release();                     // Release the vertex buffer object
-    qebo->release();                     // Release the index buffer object
-    shader->shader_program_.release();   // Release the shader program
+    // 释放绑定，防止资源泄露
+    qvao->release();
+    qvbo->release();
+    qebo->release();
+    shader->shader_program_.release();
 }
