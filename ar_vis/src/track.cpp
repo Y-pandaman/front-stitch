@@ -15,19 +15,30 @@ Track::~Track() {
     delete[] point_list;
 }
 
+/**
+ * 生成轨迹点列表。
+ * 此函数根据轨迹的参数（如长度、半径、起始角度等）计算并生成描述轨迹的点列表。
+ * 列表中每个点包含位置、法向量和其它辅助信息。
+ *
+ * 无参数
+ * 无显式返回值，但会更新类内的point_list成员变量。
+ */
 void Track::generatePointList() {
-    if (up_to_date)
+    if (up_to_date)   // 如果点列表已经是最新的，则无需重新生成
         return;
-    if (point_num_changed) {
+    if (point_num_changed) {   // 如果点数量发生变化，释放旧列表并创建新列表
         delete point_list;
         point_list = new float[point_num * TRACK_POINT_LEN];
-    } else if (point_list == nullptr) {
+    } else if (point_list == nullptr) {   // 如果点列表尚未初始化，创建新列表
         point_list = new float[point_num * TRACK_POINT_LEN];
     }
+    // 计算每个段的长度和角度
     float len_per_seg   = track_length / (float)segment_num;
     float angle_per_seg = len_per_seg / track_radius;
-    float delta_width   = track_width / 2;
-    float max_angle     = begin_angle + 1.2 * M_PI;
+    // 计算宽度变化和其他必要变量
+    float delta_width = track_width / 2;
+    float max_angle   = begin_angle + 1.2 * M_PI;
+    // 为每个段的每个子点计算信息并填充到点列表中
     for (int i = 0; i < segment_num; i++) {
         for (int j = 0; j < 6; j++) {
             int offset      = (i * 6 + j) * TRACK_POINT_LEN;
@@ -36,6 +47,7 @@ void Track::generatePointList() {
                 cur_angle = max_angle;
             if (j == 2 || j == 3 || j == 4)
                 cur_angle += angle_per_seg;
+            // 根据子点的位置计算半径和其他变量
             float cur_radius;
             if (j == 0 || j == 5 || j == 4) {
                 cur_radius = track_radius + delta_width * orientation;
@@ -44,6 +56,7 @@ void Track::generatePointList() {
                 cur_radius = track_radius - delta_width * orientation;
                 point_list[offset + 3] = 0.;
             }
+            // 计算并填充点的位置和法向量信息
             point_list[offset] =
                 cur_radius * cosf(cur_angle) * -orientation + center.x();
             point_list[offset + 1] = cur_radius * sinf(cur_angle) + center.y();
@@ -51,7 +64,7 @@ void Track::generatePointList() {
             point_list[offset + 4] = (cur_angle - cross_loc) * track_radius;
         }
     }
-    if (have_cross) {
+    if (have_cross) {   // 如果有交叉点，为每个交叉点计算并填充信息
         int label_id = 0;
         if (have_number_label)
             label_point_list.clear();
@@ -75,6 +88,7 @@ void Track::generatePointList() {
                     cur_radius = track_radius +
                                  cross_len * (float)(track_loc * orientation);
 
+                // 计算并填充交叉点的位置和法向量信息
                 point_list[offset] =
                     cur_radius * cosf(cur_angle) * (float)(-orientation) +
                     center.x();
@@ -84,6 +98,7 @@ void Track::generatePointList() {
                 point_list[offset + 3] = 1;
                 point_list[offset + 4] = (cur_angle - cross_loc) * track_radius;
             }
+            // 如果需要编号标签，计算并添加标签的位置和朝向信息
             if (have_number_label && track_loc == -1 && cur_loc_angle > -1e-4) {
                 if (label_id == 0) {
                     label_id++;
@@ -99,7 +114,7 @@ void Track::generatePointList() {
                 text_dire.normalize();
                 text_up = Eigen::Vector3f(0, 1, 0);
                 text_up.normalize();
-                // change label direction
+                // 调整标签方向
                 text_up += Eigen::Vector3f(0, 0, 0.8);
                 text_up.normalize();
                 std::string label_str =
@@ -131,7 +146,7 @@ void Track::generatePointList() {
             }
         }
     }
-    up_to_date = true;
+    up_to_date = true;   // 标记点列表为最新
 }
 
 /**
@@ -199,16 +214,31 @@ void Track::set(float _radius, float _mid_radius, int _ori,
     this->track_width  = _width;         // 设置轨迹宽度
 }
 
+/**
+ * 获取轨迹点列表的函数
+ *
+ * 本函数用于获取当前轨迹的点列表。如果点列表尚未更新或不存在，则调用内部的generatePointList函数进行生成。
+ *
+ * @return float* 返回一个指向点列表的指针。该列表包含轨迹上的所有点。
+ */
 float* Track::getPointList() {
+    // 检查点列表是否是最新的
     if (!this->up_to_date) {
-        generatePointList();
+        generatePointList();   // 生成新的点列表
     } else {
-        printf("up to date!!!!!!!\n");
+        printf("up to date!!!!!!!\n");   // 点列表已是最新，无需重新生成
     }
-    return this->point_list;
+    return this->point_list;   // 返回点列表
 }
 
+/**
+ * 获取轨迹缓冲区的大小。
+ * 该函数计算并返回存储轨迹点所需缓冲区的字节大小。轨迹点由一系列浮点数组成，每个点有固定的长度。
+ *
+ * @return 返回轨迹缓冲区的大小，以字节为单位。
+ */
 uint Track::getBufferSize() const {
+    // 计算轨迹点总数乘以每个点的长度再乘以单个浮点数的大小，得到总缓冲区大小
     return point_num * TRACK_POINT_LEN * sizeof(float);
 }
 

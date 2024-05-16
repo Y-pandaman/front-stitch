@@ -21,9 +21,7 @@ DriveAssistant::DriveAssistant(float wheel_w_dis_, float wheel_h_dis_,
       left_track(-1, 1000, 1000, 0.2, 40, Eigen::Vector3f(1000, 0, 0), 1000),
       right_track(1, 1000, 1000, 0.2, 40, Eigen::Vector3f(1000, 0, 0), 1000),
       left_safe_track(-1), left_blade_track(-1), right_safe_track(1),
-      right_blade_track(1), back_left_track(-1), back_right_track(1)
-
-{
+      right_blade_track(1), back_left_track(-1), back_right_track(1) {
     left_radius = right_radius = 1000;
     turning_direction          = 1;
     cv::FileStorage fs;
@@ -66,16 +64,26 @@ DriveAssistant::~DriveAssistant() {
     delete blade_model_transformer;
 }
 
+/**
+ * 调整左轮的转向角度
+ *
+ * 该函数用于根据输入的增量角度调整左轮的转向角度。此函数会将左轮的角度限制在一个预定义的最大转向范围内。
+ *
+ * @param delta_theta 左轮转向角度的增量，即希望增加或减少的角度值。
+ */
 void DriveAssistant::adjustLeftWheelDeltaTheta(float delta_theta) {
+    // 定义左轮转向角度的最大限制值（±45度）
     float theta_bound = 3.141592653 / 4;
-    left_wheel_theta += delta_theta;
+    left_wheel_theta += delta_theta;   // 应用转向角度增量
 
+    // 限制左轮转向角度在允许的范围内
     if (left_wheel_theta < -theta_bound) {
         left_wheel_theta = -theta_bound;
     } else if (left_wheel_theta > theta_bound) {
         left_wheel_theta = theta_bound;
     }
-    update();
+
+    update();   // 更新状态或刷新相关硬件
 }
 
 /**
@@ -227,27 +235,62 @@ void DriveAssistant::setDriveAssistant(float wheel_w_dis_, float wheel_h_dis_,
     this->update();
 }
 
+/**
+ * 设置轨迹穿越配置
+ * 为左右两个轨道设置穿越参数，这些参数包括穿越的宽度、位置、间隔以及长度。
+ * @param width 穿越的宽度。
+ * @param loc 穿越的位置。
+ * @param interval 穿越的间隔。
+ * @param len 穿越的长度。
+ * 该方法不返回任何值。
+ */
 void DriveAssistant::setTrackCross(float width, float loc, float interval,
                                    float len) {
+    // 为左侧轨道设置穿越参数
     left_track.setCross(width, loc, interval, len, track_delta_interval_factor);
+    // 为右侧轨道设置穿越参数，使用相同的参数值
     right_track.setCross(width, loc, interval, len,
                          track_delta_interval_factor);
 }
 
+/**
+ * 调整轨迹偏移量和间隔因子。
+ * 该函数用于根据给定的增量值调整对象的轨迹偏移量（delta_x,
+ * delta_y）和轨迹间隔因子（delta_factor）。
+ * 同时，设置轨迹交叉点间隔，并触发更新操作。
+ *
+ * @param delta_x 指定在x轴上的偏移增量。
+ * @param delta_y 指定在y轴上的偏移增量。
+ * @param delta_factor 指定轨迹间隔因子的增量。
+ */
 void DriveAssistant::adjustTrackDelta(float delta_x, float delta_y,
                                       float delta_factor) {
+    // 更新轨迹偏移量
     this->track_delta_x += delta_x;
     this->track_delta_y += delta_y;
+    // 更新轨迹间隔因子
     this->track_delta_interval_factor += delta_factor;
+    // 设置轨迹交叉点的间隔，初始化为0.1，不偏移，间隔为cross_interval，方向为1（正向）
     setTrackCross(0.1, 0, this->cross_interval, 1);
+    // 触发更新操作
     this->update();
 }
 
+/**
+ * 保存轨迹增量数据到YAML文件中。
+ * 该函数不接受参数且无返回值。
+ * 主要步骤包括打开YAML文件存储对象、检查文件是否成功打开、
+ * 写入轨迹增量相关的数据。
+ */
 void DriveAssistant::saveTrackDelta() {
-    cv::FileStorage fs;
+    cv::FileStorage fs;   // 创建OpenCV的文件存储对象用于写入YAML文件
+
+    // 尝试打开YAML文件以写入数据，如果失败则打印错误信息
     if (!fs.open(track_delta_yaml_path, cv::FileStorage::WRITE)) {
         printf("cannot open %s to write\n", track_delta_yaml_path.c_str());
     }
+
+    // 分别写入轨迹增量的x、y值以及时间间隔因子到YAML文件中
     fs.write("track_delta_x", track_delta_x);
     fs.write("track_delta_y", track_delta_y);
     fs.write("track_delta_interval_factor", track_delta_interval_factor);

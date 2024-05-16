@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-15 14:03:07
+ * @LastEditTime: 2024-05-16 20:15:21
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -67,8 +67,15 @@ public:
 
     float* getPointList();
 
+    /**
+     * 获取点的数量
+     *
+     * 本函数不接受任何参数。
+     *
+     * @return 返回当前点的数量。
+     */
     int getPointNum() const {
-        return point_num;
+        return point_num;   // 返回点的数量
     }
 
     const std::vector<float>& getLabelPointList() {

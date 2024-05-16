@@ -54,17 +54,35 @@ MyPainter::MyPainter(FrameBuffer* fb_track, FrameBuffer* fb_blade,
 
 MyPainter::~MyPainter() { }
 
+/**
+ * @brief 绘制赛道
+ *
+ * 该函数用于使用OpenGL绘制给定的赛道。它能够根据提供的投影、视图和模型矩阵，以及赛道的颜色和其它属性来渲染赛道。
+ * 如果需要，还可以绘制车轮轨迹。
+ *
+ * @param track 要绘制的赛道对象，包含赛道的几何和属性信息。
+ * @param projection 投影矩阵，用于将3D空间中的物体投影到2D屏幕上。
+ * @param view 视图矩阵，表示摄像机的位置和朝向。
+ * @param model 模型矩阵，表示物体在世界空间中的位置、旋转和缩放。
+ * @param track_color 赛道的颜色。
+ * @param min_show_v 显示赛道的最小速度值。
+ * @param draw_wheel_track 是否绘制车轮轨迹。
+ * @param tex_offset_y 贴图在Y轴上的偏移量。
+ */
 void MyPainter::drawTrack(Track& track, const QMatrix4x4& projection,
                           const QMatrix4x4& view, const QMatrix4x4& model,
                           const QVector3D& track_color, float min_show_v,
                           bool draw_wheel_track, float tex_offset_y) {
+    // 确保OpenGL上下文为当前上下文，并绑定赛道的VAO以准备绘制
     widget_->makeCurrent();
     track_vao_->bind();
 
+    // 绑定并配置赛道的VBO，包含赛道的顶点数据
     track_vbo_->bind();
     track_vbo_->allocate(track.getPointList(), track.getBufferSize());
     track_shader->bind();
 
+    // 根据是否绘制车轮轨迹，选择合适的纹理进行绑定
     if (draw_wheel_track) {
         wheel_track_texture->setWrapMode(QOpenGLTexture::WrapMode::Repeat);
         wheel_track_texture->bind();
@@ -73,6 +91,7 @@ void MyPainter::drawTrack(Track& track, const QMatrix4x4& projection,
         blade_track_texture->bind();
     }
 
+    // 启用并配置顶点属性，包括位置和纹理坐标
     track_shader->shader_program_.enableAttributeArray("aPos");
     track_shader->shader_program_.setAttributeBuffer(
         "aPos", GL_FLOAT, 0, TRACK_POS_COORD_LEN,
@@ -82,6 +101,7 @@ void MyPainter::drawTrack(Track& track, const QMatrix4x4& projection,
         "aTexCoord", GL_FLOAT, TRACK_POS_COORD_LEN * sizeof(float),
         TRACK_TEXTURE_COORD_LEN, TRACK_POINT_LEN * sizeof(float));
 
+    // 设置着色器中使用的uniform变量，包括矩阵和颜色
     track_shader->setUniformValue("projection", projection);
     track_shader->setUniformValue("view", view);
     track_shader->setUniformValue("model", model);
@@ -91,6 +111,8 @@ void MyPainter::drawTrack(Track& track, const QMatrix4x4& projection,
     track_shader->setUniformValue("track_color", track_color);
     track_shader->setUniformValue("min_show_v", min_show_v);
     track_shader->setUniformValue("max_show_v", 26);
+
+    // 获取并使用OpenGL 4.3的核心函数来绘制轨迹
     QOpenGLFunctions_4_3_Core* gl_function_ptr =
         QOpenGLContext::currentContext()
             ->versionFunctions<QOpenGLFunctions_4_3_Core>();
@@ -98,23 +120,44 @@ void MyPainter::drawTrack(Track& track, const QMatrix4x4& projection,
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
+    // 执行绘制命令
     gl_function_ptr->glDrawArrays(GL_TRIANGLES, 0, track.getPointNum());
-    glDisable(GL_BLEND);
+    glDisable(GL_BLEND);   // 关闭混合
+
+    // 解除绑定并释放资源
     track_shader->unbind();
     track_vbo_->release();
     track_vao_->release();
 }
 
+/**
+ * @brief 绘制轨迹回放
+ *
+ * 该函数用于使用给定的轨道数据、投影矩阵、视图矩阵和模型矩阵，以及轨道颜色和最小显示速度，
+ * 在关联的OpenGL窗口上绘制轨道的回放效果。
+ *
+ * @param track 轨道对象，包含要绘制的轨道数据
+ * @param projection 投影矩阵，用于将3D坐标转换为2D屏幕坐标
+ * @param view 视图矩阵，表示观察者的视图方向和位置
+ * @param model 模型矩阵，代表物体在世界坐标系中的位置、旋转和缩放
+ * @param track_color 轨道颜色，用于着色绘制的轨道
+ * @param min_show_v 最小显示速度，用于控制轨道点的可见性
+ */
 void MyPainter::drawBackTrack(Track& track, const QMatrix4x4& projection,
                               const QMatrix4x4& view, const QMatrix4x4& model,
                               const QVector3D& track_color, float min_show_v) {
+    // 切换到对应的OpenGL上下文
     widget_->makeCurrent();
+    // 绑定着色器程序
     back_track_shader->bind();
+    // 绑定顶点数组对象
     track_vao_->bind();
 
+    // 绑定顶点缓冲对象并更新其内容为轨道点数据
     track_vbo_->bind();
     track_vbo_->allocate(track.getPointList(), track.getBufferSize());
 
+    // 启用着色器中的属性数组，并设置属性缓冲
     back_track_shader->shader_program_.enableAttributeArray("aPos");
     back_track_shader->shader_program_.setAttributeBuffer(
         "aPos", GL_FLOAT, 0, TRACK_POS_COORD_LEN,
@@ -123,19 +166,24 @@ void MyPainter::drawBackTrack(Track& track, const QMatrix4x4& projection,
     back_track_shader->shader_program_.setAttributeBuffer(
         "aTexCoord", GL_FLOAT, TRACK_POS_COORD_LEN * sizeof(float),
         TRACK_TEXTURE_COORD_LEN, TRACK_POINT_LEN * sizeof(float));
+    // 设置着色器中的统一变量
     back_track_shader->setUniformValue("projection", projection);
     back_track_shader->setUniformValue("view", view);
     back_track_shader->setUniformValue("model", model);
-
     back_track_shader->setUniformValue("track_color", track_color);
     back_track_shader->setUniformValue("min_show_v", min_show_v);
+
+    // 配置混合功能以实现透明效果
     QOpenGLFunctions_4_3_Core* gl_function_ptr =
         QOpenGLContext::currentContext()
             ->versionFunctions<QOpenGLFunctions_4_3_Core>();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    // 绘制轨道
     gl_function_ptr->glDrawArrays(GL_TRIANGLES, 0, track.getPointNum());
-    glDisable(GL_BLEND);
+    glDisable(GL_BLEND);   // 关闭混合功能
+
+    // 解除着色器和缓冲对象的绑定
     back_track_shader->unbind();
     track_vbo_->release();
     track_vao_->release();
@@ -330,21 +378,42 @@ void MyPainter::initializeDrawText() {
     glCheckError();
 }
 
+/**
+ * @brief 绘制文本
+ *
+ * 此函数用于使用给定的坐标、投影、视图和模型矩阵以及文本颜色绘制文本。
+ * 它首先绑定并分配文本的VBO（顶点缓冲对象），然后启用着色器程序并设置必要的uniform值，
+ * 包括投影、视图、模型矩阵以及文本颜色。接着，它绘制通过VBO提供的文本顶点。
+ *
+ * @param text_point_list
+ * 包含文本顶点坐标的浮点数向量。每个文本顶点由多个坐标组成。
+ * @param projection 投影矩阵，用于将3D坐标投影到2D屏幕空间。
+ * @param view 视图矩阵，表示观察者的视图方向和位置。
+ * @param model 模型矩阵，表示物体在世界空间中的位置、尺寸和旋转。
+ * @param text_color 文本颜色，以三维向量表示（红、绿、蓝）。
+ */
 void MyPainter::drawText(const std::vector<float>& text_point_list,
                          const QMatrix4x4& projection, const QMatrix4x4& view,
                          const QMatrix4x4& model, const QVector3D& text_color) {
+    // 切换到对应的QOpenGLWidget上下文
     widget_->makeCurrent();
 
+    // 绑定并分配文本的顶点缓冲对象
     text_vbo_->bind();
     text_vbo_->allocate(text_point_list.data(),
                         text_point_list.size() * sizeof(float));
+
+    // 确保着色器程序已准备就绪
     assert(text_shader != nullptr);
 
+    // 绑定着色器程序
     text_shader->bind();
+    // 绑定并设置纹理参数
     QOpenGLTexture* texture = track_label_texture;
     texture->setWrapMode(QOpenGLTexture::WrapMode::Repeat);
     texture->bind();
 
+    // 启用着色器中的属性数组，并设置属性缓冲
     text_shader->shader_program_.enableAttributeArray("aPos");
     text_shader->shader_program_.setAttributeBuffer(
         "aPos", GL_FLOAT, 0, TRACK_POS_COORD_LEN,
@@ -354,11 +423,13 @@ void MyPainter::drawText(const std::vector<float>& text_point_list,
         "aTexCoord", GL_FLOAT, TRACK_POS_COORD_LEN * sizeof(float),
         TRACK_TEXTURE_COORD_LEN, TRACK_POINT_LEN * sizeof(float));
 
+    // 设置着色器中的uniform变量
     text_shader->setUniformValue("projection", projection);
     text_shader->setUniformValue("view", view);
     text_shader->setUniformValue("model", model);
     text_shader->setUniformValue("text_color", text_color);
 
+    // 获取并使用4.3版本的核心OpenGL函数，设置混合函数并绘制文本
     QOpenGLFunctions_4_3_Core* gl_function_ptr =
         QOpenGLContext::currentContext()
             ->versionFunctions<QOpenGLFunctions_4_3_Core>();
@@ -366,6 +437,7 @@ void MyPainter::drawText(const std::vector<float>& text_point_list,
     gl_function_ptr->glDrawArrays(GL_TRIANGLES, 0,
                                   text_point_list.size() / TRACK_POINT_LEN);
 
+    // 解除着色器程序的绑定并释放顶点缓冲对象
     text_shader->unbind();
     text_vbo_->release();
 }
@@ -453,46 +525,76 @@ void MyPainter::initializeDrawMesh(Mesh& mesh) {
                    mesh_shader);
 }
 
+/**
+ * 绘制模型
+ *
+ * 该函数负责遍历模型中的所有网格，并调用drawMesh函数绘制每一个网格。
+ * 使用了OpenGL进行绘制，需要传入模型数据、投影矩阵、视图矩阵、模型矩阵以及模型颜色。
+ *
+ * @param model 模型数据，包含多个网格。
+ * @param projection 投影矩阵，用于将3D世界中的物体投影到2D屏幕上。
+ * @param view 视图矩阵，代表了相机的位置和方向。
+ * @param model_matrix 模型矩阵，用于放置和旋转模型。
+ * @param model_color 模型颜色，为整个模型指定一个基本颜色。
+ */
 void MyPainter::drawModel(const Model& model, const QMatrix4x4& projection,
                           const QMatrix4x4& view,
                           const QMatrix4x4& model_matrix,
                           const QVector3D& model_color) {
+    // 遍历模型中的所有网格，并对每个网格进行绘制
     for (const auto& mesh : model.meshes) {
         drawMesh(mesh, projection, view, model_matrix, model_color);
     }
 }
 
+/**
+ * 绘制网格对象。
+ *
+ * @param mesh 要绘制的网格，包含顶点、索引和顶点数组对象等信息。
+ * @param projection 投影矩阵，用于将3D世界中的物体投影到2D屏幕上。
+ * @param view 视图矩阵，表示摄像机的位置和方向。
+ * @param model 模型矩阵，表示物体在世界坐标系中的位置、旋转和缩放。
+ * @param model_color 模型的颜色。
+ */
 void MyPainter::drawMesh(const Mesh& mesh, const QMatrix4x4& projection,
                          const QMatrix4x4& view, const QMatrix4x4& model,
                          const QVector3D& model_color) {
+    // 切换到绘制使用的OpenGL上下文
     widget_->makeCurrent();
 
+    // 获取网格的顶点缓冲对象、索引缓冲对象和顶点数组对象
     QOpenGLBuffer *qvbo = mesh.get_qvbo(), *qebo = mesh.get_qebo();
     QOpenGLVertexArrayObject* qvao = mesh.get_qvao();
 
+    // 绑定着色器程序和顶点数组对象
     mesh_shader->bind();
     qvao->bind();
 
+    // 设置着色器中使用的矩阵参数（投影、视图、模型）
     mesh_shader->setUniformValue("projection", projection);
     mesh_shader->setUniformValue("view", view);
     mesh_shader->setUniformValue("model", model);
 
+    // 设置视图位置、光源位置和颜色等着色器参数
     QVector3D tp;
     tp = QVector3D(view.column(3));
     mesh_shader->setUniformValue("view_pos", tp);
-    tp = QVector3D(0, 10, 10);
+    tp = QVector3D(0, 10, 10);   // 设置光源位置
     mesh_shader->setUniformValue("light_pos", tp);
-    tp = QVector3D(1, 1, 1);
+    tp = QVector3D(1, 1, 1);   // 设置光源颜色
     mesh_shader->setUniformValue("light_color", tp);
     mesh_shader->setUniformValue("object_color", model_color);
+
+    // 获取并启用OpenGL 4.3的核心功能指针，用于绘制
     QOpenGLFunctions_4_3_Core* gl_function_ptr =
         QOpenGLContext::currentContext()
             ->versionFunctions<QOpenGLFunctions_4_3_Core>();
-    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);   // 启用深度测试
 
+    // 执行绘制命令
     gl_function_ptr->glDrawElements(GL_TRIANGLES, mesh.indices.size(),
                                     GL_UNSIGNED_INT, 0);
-    glDisable(GL_DEPTH_TEST);
-    mesh_shader->unbind();
-    qvao->release();
+    glDisable(GL_DEPTH_TEST);   // 禁用深度测试
+    mesh_shader->unbind();      // 解除着色器绑定
+    qvao->release();            // 释放顶点数组对象
 }

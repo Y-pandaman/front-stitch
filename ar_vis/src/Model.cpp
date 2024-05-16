@@ -139,8 +139,15 @@ Model::Model() {
     inited = false;
 }
 
+/**
+ * 获取模型的QMatrix4x4矩阵。
+ * 该函数不接受参数。
+ *
+ * @return 返回一个QMatrix4x4类型的矩阵，该矩阵是模型矩阵的副本。
+ */
 QMatrix4x4 Model::getModelQMatrix() {
     QMatrix4x4 model_qmatrix;
+    // 将模型矩阵的数据复制到QMatrix4x4中
     memcpy(model_qmatrix.data(), model_matrix.data(), 16 * sizeof(float));
     return model_qmatrix;
 }
@@ -164,9 +171,11 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices,
       textures(std::move(_textures)) { }
 
 /**
- * @brief 设置Mesh的渲染数据，包括顶点缓冲对象（VBO）、顶点数组对象（VAO）、索引缓冲对象（EBO）和着色器。
+ * @brief
+ * 设置Mesh的渲染数据，包括顶点缓冲对象（VBO）、顶点数组对象（VAO）、索引缓冲对象（EBO）和着色器。
  * @param _qvbo 指向QOpenGLBuffer的指针，用于存储顶点数据。
- * @param _qvao 指向QOpenGLVertexArrayObject的指针，用于简化渲染过程中的状态设置。
+ * @param _qvao
+ * 指向QOpenGLVertexArrayObject的指针，用于简化渲染过程中的状态设置。
  * @param _qveo 指向QOpenGLBuffer的指针，用于存储索引数据。
  * @param shader 指向ShaderToTexture的指针，包含用于渲染的着色器程序。
  */

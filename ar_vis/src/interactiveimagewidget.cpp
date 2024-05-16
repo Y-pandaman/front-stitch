@@ -313,41 +313,55 @@ void InteractiveImageWidget::updateImageTranslation() {
     // 应用图像的缩放因子，更新变换矩阵以实现缩放
     transform_matrix.scale(image_scale, image_scale);
 }
-void InteractiveImageWidget::paintGL() {
-    static int paint_count = 0;
 
+/**
+ * @brief 绘制交互式图像窗口的OpenGL内容。
+ * 该函数负责初始化和更新绘制所需的各种状态，并实际执行绘制操作。
+ * 它不接受参数，也不返回值。
+ */
+void InteractiveImageWidget::paintGL() {
+    static int paint_count = 0;   // 用于追踪绘制次数
+
+    // 初始化辅助驾驶信息，仅在第一次调用时执行
     if (!assistant_inited) {
-        this->updateAssistantTransformInfo();
-        assistant_inited = true;
-        glCheckError();
+        this->updateAssistantTransformInfo();   // 更新辅助驾驶对象的变换信息
+        assistant_inited = true;                // 标记为已初始化
+        glCheckError();                         // 检查OpenGL错误
     }
 
+    // 绑定、清除、然后解绑前视图帧缓冲区
     fb_track_->bind();
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     fb_track_->unbind();
 
+    // 绑定、清除、然后解绑铲刀视图帧缓冲区
     fb_blade_->bind();
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     fb_blade_->unbind();
 
+    // 绑定、清除、然后解绑后视图帧缓冲区
     fb_back_track_->bind();
     glClearColor(0., 0., 0., 0.);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     fb_back_track_->unbind();
 
+    // 禁用一些OpenGL状态以准备绘制
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+    // 处理铲刀输入零高度设置
     if (blade_input_set_zero_height) {
         blade_input_set_zero_height = false;
         drive_assistant->blade_model_transformer->setCurrentPoseZeroHeight();
     }
 
+    // 如果显示辅助驾驶信息，则执行相应的绘制操作
     if (show_drive_assistant) {
+        // 绘制安全行驶区域
         if (blade_max_operation_line) {
             QVector3D color(0x24, 0xff, 0x00);
             color /= 255.0f;
@@ -362,6 +376,7 @@ void InteractiveImageWidget::paintGL() {
                                    assistant_transform_info.model, color, 1.1,
                                    false, 0);
         }
+        // 绘制操作铲刀区域
         if (blade_operation_line) {
             my_painter_->drawTrack(
                 drive_assistant->left_blade_track,
@@ -374,6 +389,7 @@ void InteractiveImageWidget::paintGL() {
                 assistant_transform_info.view, assistant_transform_info.model,
                 QVector3D(0.5686, 0.9333, 0.9019), 1, false, 0);
         }
+        // 绘制前轮驱动轨迹和文字
         if (front_wheel_driving_line) {
             QVector3D lane_line_color(0, 255, 255);
             lane_line_color /= 255.0;
@@ -398,12 +414,14 @@ void InteractiveImageWidget::paintGL() {
                 lane_line_color);
         }
 
+        // 绘制铲刀模型
         if (flag_draw_blade_model) {
             QMatrix4x4 projection;
             projection.setToIdentity();
             projection.perspective(
                 60, (float)blade_width_ / (float)blade_height_, 0.1, 1000);
 
+            // 循环绘制多个铲刀模型实例
             my_painter_->drawModel(
                 drive_assistant->blade_model_transformer->static_mesh_1,
                 projection, drive_assistant->blade_view_matrix,
@@ -490,8 +508,12 @@ void InteractiveImageWidget::paintGL() {
                 config.blade_color_0);
         }
 
+        // 设置车道线颜色为黄色，并将其归一化到0到1的范围
         QVector3D lane_line_color(0, 255, 255);
         lane_line_color /= 255.0;
+
+        // 使用my_painter_绘制后视图中的左车道线和右车道线
+        // 参数包括车道线数据、投影矩阵、视图矩阵、模型矩阵、颜色和深度值
         my_painter_->drawBackTrack(
             drive_assistant->back_left_track,
             assistant_transform_info.projection, assistant_transform_info.view,
@@ -500,19 +522,21 @@ void InteractiveImageWidget::paintGL() {
             drive_assistant->back_right_track,
             assistant_transform_info.projection, assistant_transform_info.view,
             assistant_transform_info.model, lane_line_color, -100);
+
+        // 检查OpenGL错误
         glCheckError();
     } else {
     }
 
-    // painter.endNativePainting();
+    // 使用OpenGL额外功能将帧缓冲区内容blit（复制）到主窗口帧缓冲区
     QOpenGLExtraFunctions* f =
         QOpenGLContext::currentContext()->extraFunctions();
     fb_track_->bliteFboMSToFbo(f);
     fb_blade_->bliteFboMSToFbo(f);   // TODO CHECK
     fb_back_track_->bliteFboMSToFbo(f);
-    glCheckError();
+    glCheckError();   // 检查OpenGL错误
 
-    paint_count++;
+    paint_count++;   // 增加绘制次数计数
 }
 
 /**
@@ -583,30 +607,58 @@ void InteractiveImageWidget::getImageCPU4Channels(cv::Mat& image,
     image.convertTo(image, CV_8UC4, 255.0);
 }
 
+/**
+ * 计算一条线与一个平面的交点。
+ *
+ * @param point 线的起点坐标（Vector3f类型）。
+ * @param direct 线的方向向量（Vector3f类型），需为非零向量。
+ * @param planeNormal 平面的法向量（Vector3f类型），需为非零向量。
+ * @param planePoint 平面上的一点（Vector3f类型）。
+ * @return 交点的坐标（Vector3f类型）。
+ *
+ * 该函数首先计算参数线与平面的交点，然后返回该交点的坐标。
+ * 它通过线的起点、方向向量，以及平面的法向量和一点来实现计算。
+ * 具体实现中，首先计算参数d，该值表示从线的起点到平面的距离，
+ * 然后通过该距离和线的方向向量计算出交点的坐标。
+ */
 static Eigen::Vector3f
 GetIntersectWithLineAndPlane(Eigen::Vector3f point, Eigen::Vector3f direct,
                              Eigen::Vector3f planeNormal,
                              Eigen::Vector3f planePoint) {
+    // 计算参数d，即线到平面的距离
     float d = (planePoint - point).dot(planeNormal) / direct.dot(planeNormal);
+    // 根据参数d和线的方向向量，计算并返回交点的坐标
     return d * direct.normalized() + point;
 }
 
+/**
+ * 更新辅助变换信息
+ * 本函数用于根据当前的平面位置、相机位置等信息，更新辅助变换信息，包括相机视图矩阵和投影矩阵。
+ * 该信息可用于渲染或其他需要相机和场景信息的计算。
+ */
+
 void InteractiveImageWidget::updateAssistantTransformInfo() {
+    // 设置近平面和远平面的深度值
     float z_near = 0.1f, z_far = 1000.0f;
 
+    // 获取平面位置和法向量
     Eigen::Vector3f plane_pos    = plane_pose_.topRightCorner(3, 1);
     Eigen::Vector3f plane_normal = plane_pose_.topLeftCorner(3, 3).col(2);
     plane_normal.normalize();
+    // 获取相机位置和方向（将平面法向量作为方向）
     Eigen::Vector3f ray_pos = camera_pose_.topRightCorner(3, 1);
     Eigen::Vector3f ray_dir = plane_normal;
 
+    // 计算光线与平面的交点，并更新平面位置
     Eigen::Vector3f intersect_point =
         GetIntersectWithLineAndPlane(ray_pos, ray_dir, plane_normal, plane_pos);
     plane_pose_.topRightCorner(3, 1) = intersect_point;
 
+    // 计算相机到平面的变换，用于得到相机的视图矩阵
     camera_pose_                = plane_pose_.inverse() * camera_pose_;
     Eigen::Matrix4f view_matrix = camera_pose_.inverse();
 
+    // 设置投影矩阵
     Eigen::Matrix4f projection_matrix = Eigen::Matrix4f::Zero();
     projection_matrix(0, 0)           = 2.0f * fx_ / fb_track_->width_;
     projection_matrix(1, 1)           = 2.0f * fy_ / fb_track_->height_;
@@ -616,13 +668,16 @@ void InteractiveImageWidget::updateAssistantTransformInfo() {
     projection_matrix(2, 3) = -(2 * z_far * z_near) / (z_far - z_near);
     projection_matrix(3, 2) = -1;
 
+    // 更新辅助变换信息中的视图和投影矩阵
     memcpy(assistant_transform_info.projection.data(), projection_matrix.data(),
            sizeof(float) * 16);
     memcpy(assistant_transform_info.view.data(), view_matrix.data(),
            sizeof(float) * 16);
     glCheckError();
 
+    // 根据不同的更新方式，计算不同的视图矩阵
     if (update_assistant_transform_info_by == BY_CAM1_CAM3_TAG) {
+        // 使用CAM1和CAM3之间的关系以及标签位置更新视图矩阵
         QMatrix4x4 cam3_to_cam1 = cam1_to_cam3.inverted();
         QMatrix4x4 tag_to_cam3  = cam3_to_tag.inverted();
         QMatrix4x4 tag_to_cam1  = tag_to_cam3 * cam3_to_cam1;
@@ -653,6 +708,7 @@ void InteractiveImageWidget::updateAssistantTransformInfo() {
         assistant_transform_info.view.lookAt(view_ori, view_tar,
                                              QVector3D(0, 0, 1));
     } else if (update_assistant_transform_info_by == BY_CAM1_TAG) {
+        // 使用CAM1和标签之间的关系更新视图矩阵
         QMatrix4x4 tag_to_cam1     = cam1_to_tag.inverted();
         QVector4D world_pos_in_tag = tag_to_cam1.column(3);
         world_pos_in_tag.setZ(0);
@@ -729,13 +785,30 @@ void InteractiveImageWidget::setDriveAssistant(float wheel_w_dis_,
                                        track_width_);
 }
 
+/**
+ * 设置相机与地面的相对关系
+ * 本函数用于更新相机相对于地面（或某个标记物）的变换关系。它接受两个变换矩阵作为输入，
+ * 分别表示从相机3到标记物的变换和从相机1到相机3的变换。更新变换关系后，会重置辅助对象的初始化状态
+ * 并标记更新来源为BY_CAM1_CAM3_TAG。
+ *
+ * @param mat_cam3_to_tag_
+ * 从相机3到标记物的变换矩阵，为cv::Mat类型，尺寸为3x4或4x4。
+ * @param mat_cam1_to_cam3_
+ * 从相机1到相机3的变换矩阵，为cv::Mat类型，尺寸为3x4或4x4。
+ */
 void InteractiveImageWidget::setCameraGround(const cv::Mat& mat_cam3_to_tag_,
                                              const cv::Mat& mat_cam1_to_cam3_) {
+    // 复制从相机3到标记物的变换矩阵数据，并转换矩阵的存储顺序
     memcpy(cam3_to_tag.data(), mat_cam3_to_tag_.data, sizeof(float) * 16);
     cam3_to_tag = cam3_to_tag.transposed();
+
+    // 复制从相机1到相机3的变换矩阵数据，并转换矩阵的存储顺序
     memcpy(cam1_to_cam3.data(), mat_cam1_to_cam3_.data, sizeof(float) * 16);
-    cam1_to_cam3                       = cam1_to_cam3.transposed();
-    this->assistant_inited             = false;
+    cam1_to_cam3 = cam1_to_cam3.transposed();
+
+    // 重置辅助对象的初始化状态，准备更新辅助对象的变换信息
+    this->assistant_inited = false;
+    // 标记辅助对象的变换信息更新来源
     update_assistant_transform_info_by = BY_CAM1_CAM3_TAG;
 }
 
@@ -761,8 +834,17 @@ void InteractiveImageWidget::setTrackCross(float width, float loc,
     drive_assistant->setTrackCross(width, loc, interval, len);
 }
 
+/**
+ * 调整轨迹的偏移量。
+ * 该方法用于根据给定的水平偏移量（delta_x）、垂直偏移量（delta_y）和偏移因子（delta_factor）来调整轨迹的当前位置。
+ *
+ * @param delta_x 水平方向上的偏移量。
+ * @param delta_y 垂直方向上的偏移量。
+ * @param delta_factor 偏移因子，用于控制偏移量的放大或缩小。
+ */
 void InteractiveImageWidget::adjustTrackDelta(float delta_x, float delta_y,
                                               float delta_factor) {
+    // 将偏移量和偏移因子传递给drive_assistant对象的adjustTrackDelta方法
     drive_assistant->adjustTrackDelta(delta_x, delta_y, delta_factor);
 }
 

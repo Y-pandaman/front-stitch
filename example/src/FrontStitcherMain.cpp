@@ -376,7 +376,7 @@ int frontStitcherMain(int argc, char** argv) {
         cylinder_stitcher.stitch_project_to_screen(time);
         cylinder_stitcher.getFinalImageCPU(out_image, out_mask);
 
-        // 更新时间戳，并将图像上部70像素复制到图像的下部，然后调整图像大小为640x360
+        // 更新时间戳，并将图像上部70像素复制到图像的下部
         ++time;
         out_image(cv::Rect(0, 70, out_image.cols, out_image.rows - 80))
             .copyTo(out_image);
