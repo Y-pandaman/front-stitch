@@ -3,7 +3,7 @@
 
 /**
  * 加载模型函数
- * 
+ *
  * 通过给定的文件路径，旋转矩阵和位置向量加载模型。
  * 使用Assimp库进行模型的加载和处理，将模型的几何形状和材质信息存储在内部结构中。
  *
@@ -50,7 +50,7 @@ void Model::loadModel(const std::filesystem::path& _model_path,
 
 /**
  * 处理一个AI节点，包括该节点的所有网格和其子节点。
- * 
+ *
  * @param node 指向当前正在处理的aiNode的指针。
  * @param scene 包含整个场景信息的aiScene结构体指针。
  * @param R 当前节点的旋转矩阵，用于将AI空间中的坐标转换为应用中的坐标。
@@ -63,7 +63,7 @@ void Model::processNode(aiNode* node, const aiScene* scene,
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         meshes.push_back(processMesh(mesh, scene, R, pos));
     }
-    
+
     // 遍历当前节点的所有子节点，并对它们递归调用processNode函数
     for (int i = 0; i < node->mNumChildren; i++) {
         processNode(node->mChildren[i], scene, R, pos);
@@ -72,7 +72,7 @@ void Model::processNode(aiNode* node, const aiScene* scene,
 
 /**
  * 处理并加载一个三维模型的网格数据。
- * 
+ *
  * @param mesh 指向aiMesh的指针，代表一个三维模型的网格。
  * @param scene 指向aiScene的指针，代表整个三维模型的场景信息。
  * @param R 一个3x3的旋转矩阵，用于将网格数据从原始坐标系旋转到目标坐标系。
@@ -81,9 +81,9 @@ void Model::processNode(aiNode* node, const aiScene* scene,
  */
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene,
                         const Eigen::Matrix3f& R, const Eigen::Vector3f& pos) {
-    std::vector<Vertex> vertices; // 存储顶点信息的容器
-    std::vector<uint> indices; // 存储顶点索引的容器，用于绘制
-    std::vector<Texture> textures; // 存储纹理信息的容器
+    std::vector<Vertex> vertices;   // 存储顶点信息的容器
+    std::vector<uint> indices;   // 存储顶点索引的容器，用于绘制
+    std::vector<Texture> textures;   // 存储纹理信息的容器
 
     // 遍历网格中的所有顶点，收集顶点信息
     for (uint i = 0; i < mesh->mNumVertices; i++) {
@@ -92,16 +92,17 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene,
         vertex.position =
             Eigen::Vector3f(mesh->mVertices[i].x, mesh->mVertices[i].y,
                             mesh->mVertices[i].z) /
-            1000.0; // 缩放因子，取决于原始数据的单位
-        vertex.position = R.transpose() * (vertex.position - pos); // 旋转和平移
+            1000.0;   // 缩放因子，取决于原始数据的单位
+        vertex.position =
+            R.transpose() * (vertex.position - pos);   // 旋转和平移
         // 如果有法线信息，则处理法线
         if (mesh->HasNormals()) {
             vertex.normal = -Eigen::Vector3f(
                 mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-            vertex.normal = R.transpose() * vertex.normal; // 旋转法线
+            vertex.normal = R.transpose() * vertex.normal;   // 旋转法线
         }
         // 如果有纹理坐标，则处理纹理坐标
-        if (mesh->mTextureCoords[0]) {   
+        if (mesh->mTextureCoords[0]) {
             vertex.tex_coords = Eigen::Vector2f(mesh->mTextureCoords[0][i].x,
                                                 mesh->mTextureCoords[0][i].y);
         } else {
@@ -125,7 +126,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene,
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     }
 
-    return {vertices, indices, textures}; // 返回处理后的网格数据
+    return {vertices, indices, textures};   // 返回处理后的网格数据
 }
 
 Model::Model(const std::filesystem::path& model_file_path) {
@@ -160,39 +161,62 @@ Vertex Model::getVertex(int idx) {
 Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices,
            std::vector<Texture> _textures)
     : vertices(std::move(_vertices)), indices(std::move(_indices)),
-      textures(std::move(_textures)) {
-}
+      textures(std::move(_textures)) { }
 
+/**
+ * @brief 设置Mesh的渲染所需要的数据和对象
+ *
+ * 本函数用于初始化Mesh的渲染，包括绑定和配置顶点数组对象（VAO）、顶点缓冲对象（VBO）和索引缓冲对象（EBO），
+ * 以及启用和配置着色器中的属性数组。
+ *
+ * @param _qvbo 指向QOpenGLBuffer的指针，用于存储顶点数据
+ * @param _qvao 指向QOpenGLVertexArrayObject的指针，用于配置和绑定顶点属性
+ * @param _qveo 指向QOpenGLBuffer的指针，用于存储索引数据
+ * @param shader 指向ShaderToTexture的指针，包含着色器程序，用于渲染
+ */
 void Mesh::setupMesh(QOpenGLBuffer* _qvbo, QOpenGLVertexArrayObject* _qvao,
                      QOpenGLBuffer* _qveo, ShaderToTexture* shader) {
-    qvao = _qvao;
-    qvao->create();
-    qvbo = _qvbo;
-    qvbo->create();
-    qebo = _qveo;
-    qebo->create();
+    qvao = _qvao;     // Assign the vertex array object
+    qvao->create();   // Create the vertex array object
+    qvbo = _qvbo;     // Assign the vertex buffer object
+    qvbo->create();   // Create the vertex buffer object
+    qebo = _qveo;     // Assign the index buffer object
+    qebo->create();   // Create the index buffer object
 
-    qvao->bind();
-    qvbo->bind();
-    qvbo->setUsagePattern(QOpenGLBuffer::StaticDraw);
-    qvbo->allocate(vertices.data(), vertices.size() * sizeof(Vertex));
+    qvao->bind();   // Bind the vertex array object
+    qvbo->bind();   // Bind the vertex buffer object
+    qvbo->setUsagePattern(QOpenGLBuffer::StaticDraw);   // Set the usage pattern
+                                                        // of the vertex buffer
+    qvbo->allocate(vertices.data(),
+                   vertices.size() *
+                       sizeof(Vertex));   // Allocate memory for vertices
 
+    // Bind the shader program and enable attribute arrays
     shader->shader_program_.bind();
     shader->shader_program_.enableAttributeArray("aPos");
-    shader->shader_program_.setAttributeBuffer("aPos", GL_FLOAT, 0, 3,
-                                               8 * sizeof(float));
-    shader->shader_program_.enableAttributeArray("aNormal");
     shader->shader_program_.setAttributeBuffer(
-        "aNormal", GL_FLOAT, 3 * sizeof(float), 3, 8 * sizeof(float));
-    shader->shader_program_.enableAttributeArray("aTexCoords");
+        "aPos", GL_FLOAT, 0, 3,
+        8 * sizeof(float));   // Configure position attribute
+    shader->shader_program_.enableAttributeArray(
+        "aNormal");   // Enable normal attribute
     shader->shader_program_.setAttributeBuffer(
-        "aTexCoords", GL_FLOAT, 6 * sizeof(float), 2, 8 * sizeof(float));
-    qebo->bind();
-    qebo->setUsagePattern(QOpenGLBuffer::StaticDraw);
-    qebo->allocate(indices.data(), indices.size() * sizeof(uint));
+        "aNormal", GL_FLOAT, 3 * sizeof(float), 3,
+        8 * sizeof(float));   // Configure normal attribute
+    shader->shader_program_.enableAttributeArray(
+        "aTexCoords");   // Enable texture coordinate attribute
+    shader->shader_program_.setAttributeBuffer(
+        "aTexCoords", GL_FLOAT, 6 * sizeof(float), 2,
+        8 * sizeof(float));   // Configure texture coordinate attribute
+    qebo->bind();             // Bind the index buffer object
+    qebo->setUsagePattern(QOpenGLBuffer::StaticDraw);   // Set the usage pattern
+                                                        // of the index buffer
+    qebo->allocate(indices.data(),
+                   indices.size() *
+                       sizeof(uint));   // Allocate memory for indices
 
-    qvao->release();
-    qvbo->release();
-    qebo->release();
-    shader->shader_program_.release();
+    // Release resources to prevent memory leaks or conflicts
+    qvao->release();                     // Release the vertex array object
+    qvbo->release();                     // Release the vertex buffer object
+    qebo->release();                     // Release the index buffer object
+    shader->shader_program_.release();   // Release the shader program
 }

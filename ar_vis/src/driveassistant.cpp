@@ -1,6 +1,17 @@
 #include "driveassistant.h"
 #include <iostream>
 
+/**
+ * DriveAssistant构造函数
+ * 用于初始化驾驶辅助对象，配置车轮和轨道的相关参数。
+ *
+ * @param wheel_w_dis 车轮宽度距离
+ * @param wheel_h_dis 车轮高度距离
+ * @param cross_interval 车轮跨距
+ * @param track_length 轨道长度
+ * @param track_width 轨道宽度
+ * @param segment_num_ 轨道分段数
+ */
 DriveAssistant::DriveAssistant(float wheel_w_dis_, float wheel_h_dis_,
                                float cross_interval_, float track_length_,
                                float track_width_, int segment_num_)
@@ -18,37 +29,36 @@ DriveAssistant::DriveAssistant(float wheel_w_dis_, float wheel_h_dis_,
     cv::FileStorage fs;
     track_delta_yaml_path =
         std::filesystem::path("../example/yamls/track_delta.yaml");
+    // 尝试打开轨迹偏差配置文件
     if (!fs.open(track_delta_yaml_path, cv::FileStorage::READ)) {
         printf("cannot open %s\n", track_delta_yaml_path.c_str());
     } else {
-        //        fs["track_delta_x"] >> track_delta_x;
-        //        fs["track_delta_y"] >> track_delta_y;
-        //        fs["track_delta_interval_factor"] >>
-        //        track_delta_interval_factor;
+        // 读取轨迹偏差参数（当前代码段被注释）
     }
 
+    // 初始化铲刀模型变换器参数
     init_blade_model_transformer(
         QVector3D(0, 0, 0), QVector3D(-0.875, 4.021, 1.61),
         QVector3D(0.48, 3.314, 0.857), QVector3D(0.875, 4.021, 1.61), 3.31381,
         4.25303, 1.690, 4.25303, QVector3D(1.094, -0.479, -1.023),
         QVector3D(1.094, -0.423, 0.065), 0.486);
 
-    // TODO CHECK INITIAL STATUS
-    //    blade_model_transformer->setInitialPose(1.311, 1.328, 1.247, 0,
-    //    0.960, 1.079);
+    // 设置初始状态（待完成）
     blade_view_matrix.setToIdentity();
+    // 设置铲刀视图矩阵，用于视角变换
     blade_view_matrix.lookAt(QVector3D(0, 8, 4), QVector3D(0, 1, -0.5),
                              QVector3D(0, 0, 1));
 
-    //    front_wheel_center = QVector3D(-0.062, 6.348, 0);       // 5505pro
-    //    front_wheel_center = QVector3D(-0.062, 5.369, 0);       // 3505
+    // 设置前轮中心位置
     front_wheel_center = config.front_wheel_center;
 
+    // 计算左右最大铲刀点位置
     left_max_blade_point =
         front_wheel_center + QVector3D(-5.66217, -2.60018, 0);
     right_max_blade_point =
         front_wheel_center + QVector3D(5.66217, -2.60018, 0);
 
+    // 更新状态
     update();
 }
 
@@ -70,24 +80,24 @@ void DriveAssistant::adjustLeftWheelDeltaTheta(float delta_theta) {
 
 /**
  * 调整左轮的转向角度
- * 
+ *
  * 此函数用于调整驱动装置的左轮转向角度。它将输入的角度值限制在一个预定义的最大偏转角度范围内，
  * 确保轮子不会过度转向，从而保持设备的稳定性。
- * 
+ *
  * @param theta 欲调整的左轮转向角度（弧度制）
  */
 void DriveAssistant::adjustLeftWheelTheta(float theta) {
     // 定义左轮转向角度的最大偏转值（π/4弧度）
     float theta_bound = 3.141592653 / 4;
-    left_wheel_theta  = theta;  // 直接设置左轮转向角度为输入值
+    left_wheel_theta  = theta;   // 直接设置左轮转向角度为输入值
 
     // 检查并调整左轮转向角度，确保其在可接受的范围内
     if (left_wheel_theta < -theta_bound) {
-        left_wheel_theta = -theta_bound; // 如果角度小于最小值，则设置为最小值
+        left_wheel_theta = -theta_bound;   // 如果角度小于最小值，则设置为最小值
     } else if (left_wheel_theta > theta_bound) {
-        left_wheel_theta = theta_bound; // 如果角度大于最大值，则设置为最大值
+        left_wheel_theta = theta_bound;   // 如果角度大于最大值，则设置为最大值
     }
-    update();  // 调用更新函数，应用新的转向角度
+    update();   // 调用更新函数，应用新的转向角度
 }
 
 /**
@@ -243,10 +253,29 @@ void DriveAssistant::saveTrackDelta() {
     fs.write("track_delta_interval_factor", track_delta_interval_factor);
 }
 
+/**
+ * 初始化铲刀模型变换器。
+ * 这个函数用于创建并初始化一个铲刀模型变换器对象，它将会根据提供的参数来进行配置。
+ * 参数包括铲刀的各个关键点位置、铲刀部分长度以及两个参考向量和一个长度。
+ *
+ * @param _p_A 铲刀模型的A点位置。
+ * @param _p_D 铲刀模型的D点位置。
+ * @param _p_F 铲刀模型的F点位置。
+ * @param _p_G 铲刀模型的G点位置。
+ * @param _l_AE A点到E点的长度。
+ * @param _l_AB A点到B点的长度。
+ * @param _l_BC B点到C点的长度。
+ * @param _l_AC A点到C点的长度。
+ * @param _p_2_nC 铲刀模型上点2到C点的法向量。
+ * @param _p_2_nA 铲刀模型上点2到A点的法向量。
+ * @param _l_nBnC nB和nC之间的长度。
+ */
 void DriveAssistant::init_blade_model_transformer(
     const QVector3D& _p_A, const QVector3D& _p_D, const QVector3D& _p_F,
     const QVector3D& _p_G, float _l_AE, float _l_AB, float _l_BC, float _l_AC,
     const QVector3D& _p_2_nC, const QVector3D& _p_2_nA, float _l_nBnC) {
+    // 删除旧的铲刀模型变换器对象，避免内存泄漏。
     delete blade_model_transformer;
+    // 创建并初始化新的铲刀模型变换器对象。
     blade_model_transformer = new BladeModelTransformer();
 }

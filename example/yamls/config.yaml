@@ -31,12 +31,12 @@ back_track_height: 720
 chandao_left_vertex_idx: 288606
 chandao_right_vertex_idx: 304287
 
-wheel_track_img_path: "/home/xcmg/workspace_cwx/front-stitcher/assets/wheel_track_5.png"
-blade_track_img_path: "/home/xcmg/workspace_cwx/front-stitcher/assets/blade_track.png"
+wheel_track_img_path: "/home/bdca/workspace/test/front-stitcher/assets/wheel_track_5.png"
+blade_track_img_path: "/home/bdca/workspace/test/front-stitcher/assets/blade_track.png"
 
 # tracK_label_dir: "/home/xcmg/workspace_cwx/front-stitcher/assets/label_texture"
 
-track_label_texture_path: "/home/xcmg/workspace_cwx/front-stitcher/assets/track_label_texture.png"
+track_label_texture_path: "/home/bdca/workspace/test/front-stitcher/assets/track_label_texture.png"
 
 wheel_track_width: 0.2
 blade_track_width: 0.2

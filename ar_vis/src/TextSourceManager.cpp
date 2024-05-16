@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:31
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-08 14:55:39
+ * @LastEditTime: 2024-05-16 16:23:36
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -44,7 +44,7 @@ bool TextSourceManager::initialize(int _pixel_height, int _pixel_width,
     int tot_width  = c_max_width * cols;
     int tot_height = c_max_height * rows;
 
-    printf("c_max_height: %d c_max_width: %d\n", c_max_height, c_max_width);
+    // printf("c_max_height: %d c_max_width: %d\n", c_max_height, c_max_width);
 
     for (uchar c = 0; c < 128; c++) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER))   // load 'X'

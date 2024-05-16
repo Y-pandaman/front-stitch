@@ -1,3 +1,12 @@
+/*
+ * @Author: 姚潘涛
+ * @Date: 2024-05-08 10:14:32
+ * @LastEditors: 姚潘涛
+ * @LastEditTime: 2024-05-16 16:38:20
+ * @Description:
+ *
+ * Copyright (c) 2024 by pandaman, All Rights Reserved.
+ */
 #ifndef MYPAINTER_H
 #define MYPAINTER_H
 
@@ -59,6 +68,13 @@ public:
 
     void initializeDrawRects();
 
+    /**
+     * 获取DriveAssistant对象的指针。
+     *
+     * 该函数不接受任何参数。
+     *
+     * @return 返回一个指向DriveAssistant对象的指针。
+     */
     DriveAssistant* getDriveAssistant() {
         return drive_assistant;
     }

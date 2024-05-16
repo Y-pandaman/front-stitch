@@ -88,31 +88,42 @@ void InteractiveImageWidget::setWheelTheta(float theta) {
     drive_assistant->adjustLeftWheelTheta(theta);
 }
 
+/**
+ * @brief 初始化OpenGL环境
+ * 该函数在UI界面初始化时调用，用于设置OpenGL环境，包括帧缓冲对象（FrameBuffer）的初始化，
+ * 以及画笔（MyPainter）的初始化，进一步初始化各种绘制模型。
+ * 无参数
+ * 无返回值
+ */
 void InteractiveImageWidget::initializeGL() {
-    makeCurrent();
-    initializeOpenGLFunctions();
+    makeCurrent();                 // 切换为当前窗口上下文
+    initializeOpenGLFunctions();   // 初始化OpenGL函数
 
+    // 检查帧缓冲对象是否已经初始化，如果没有则进行初始化
     if (fb_track_ == NULL || fb_blade_ == nullptr ||
         fb_back_track_ == nullptr) {
+        // 对帧缓冲对象进行初始化
         if (fb_track_ == NULL)
             fb_track_ = new FrameBuffer;
         if (fb_blade_ == nullptr)
             fb_blade_ = new FrameBuffer;
         if (fb_back_track_ == nullptr) {
-            // printf("new fb_back_track_ = new FrameBuffer\n");
             fb_back_track_ = new FrameBuffer;
         }
 
+        // 配置各帧缓冲对象的尺寸和格式
         fb_track_->resize(GL_RGBA32F, width_, height_, true, true);
         fb_blade_->resize(GL_RGBA32F, blade_width_, blade_height_, false, true);
         fb_back_track_->resize(GL_RGBA32F, config.back_track_width,
                                config.back_track_height, false, true);
 
+        // 初始化画笔对象，并配置绘制所需的模型
         my_painter_ = new MyPainter(fb_track_, fb_blade_, fb_back_track_, this);
         drive_assistant = my_painter_->getDriveAssistant();
         my_painter_->initializeDrawTrack();
         my_painter_->initializeDrawText();
 
+        // 初始化绘制模型，包括各种blade模型和其它模型
         my_painter_->initializeDrawModel(
             drive_assistant->blade_model_transformer->static_mesh_1);
         my_painter_->initializeDrawModel(
@@ -142,7 +153,7 @@ void InteractiveImageWidget::initializeGL() {
         my_painter_->initializeDrawModel(
             drive_assistant->blade_model_transformer->chandao_mesh);
     }
-    glCheckError();
+    glCheckError();   // 检查OpenGL错误
 }
 
 void InteractiveImageWidget::mouseMoveEvent(QMouseEvent* event) {
@@ -441,7 +452,8 @@ void InteractiveImageWidget::paintGL() {
 /**
  * 从指定的帧缓冲区获取图像数据，并将其转换为OpenCV的Mat格式
  * @param image 引用，用于存储从帧缓冲区获取到的图像
- * @param from 指定获取图像的来源，可以是追踪帧缓冲区、铲刀帧缓冲区或后追踪帧缓冲区
+ * @param from
+ * 指定获取图像的来源，可以是追踪帧缓冲区、铲刀帧缓冲区或后追踪帧缓冲区
  */
 void InteractiveImageWidget::getImageCPU(cv::Mat& image, GetImageFrom from) {
     FrameBuffer* fb;
@@ -715,21 +727,22 @@ void InteractiveImageWidget::setBladeCurrentPose(float l_CG, float l_BD,
 
 /**
  * 获取跟踪帧缓冲区在CUDA中的指针
- * 
- * 本函数用于获取当前对象中存储的跟踪帧缓冲区（frame buffer）对应的CUDA内存指针。
+ *
+ * 本函数用于获取当前对象中存储的跟踪帧缓冲区（frame
+ * buffer）对应的CUDA内存指针。
  * 这个指针可以用于在CUDA计算环境中直接访问和操作该帧缓冲区的数据。
- * 
+ *
  * @return 返回一个float类型的指针，指向在CUDA设备内存中的跟踪帧缓冲区数据。
  */
 float* InteractiveImageWidget::getTrackFBCudaPtr() {
-    return fb_track_->getCudaPtr(); // 从fb_track_对象中获取CUDA内存指针
+    return fb_track_->getCudaPtr();   // 从fb_track_对象中获取CUDA内存指针
 }
 
 /**
  * 更新在Cuda内存中的跟踪信息。
- * 
+ *
  * 该函数调用fb_track_对象的updateCudaMem()方法，以更新在Cuda内存中的跟踪信息。
- * 
+ *
  * @return 返回一个布尔值，表示是否成功更新了Cuda内存中的跟踪信息。
  */
 bool InteractiveImageWidget::updateTrackInCudaMem() {

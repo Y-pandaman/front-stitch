@@ -84,8 +84,15 @@ public:
                    const Eigen::Matrix3f& R   = Eigen::Matrix3f::Identity(),
                    const Eigen::Vector3f& pos = Eigen::Vector3f(0, 0, 0));
 
+    /**
+     * 获取当前对象中网格的数量。
+     *
+     * 本函数不接受任何参数。
+     *
+     * @return 返回一个无符号整数（uint），表示网格的数量。
+     */
     uint getMeshesNum() const {
-        return meshes.size();
+        return meshes.size();   // 返回存储网格的容器的大小
     }
 
     /**
