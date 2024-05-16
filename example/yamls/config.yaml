@@ -1,0 +1,44 @@
+%YAML:1.0
+---
+blade_model_path : "/home/bdca/3505_ply"      # 铲刀模型保存路径
+model_type : ".ply"                                   # 铲刀模型文件类型, .obj or .ply
+
+front_wheel_center : !!opencv-matrix                  # 前轮相对于相机安装位置投影的坐标(即不考虑高度)，模型测量得到
+  rows: 3                                             # x正为左，y正为前
+  cols: 1                                             # 记为1号坐标系
+  dt: f
+  data: [ -0.062, 4.369, 0]
+
+track_min_show_v: 1                               # 车轮轨迹线开始绘制的位置
+
+blade_color_0 : !!opencv-matrix                       # 铲刀大部分区域的颜色，黄色
+  rows: 3
+  cols: 1
+  dt: f
+  data: [ 0.714, 0.612, 0.325]
+
+blade_color_1 : !!opencv-matrix                       # 铲刀油缸伸缩部分颜色，银色
+  rows: 3
+  cols: 1
+  dt: f
+  data: [ 0.8, 0.8, 0.8]
+
+font_pixel_height: 50
+
+back_track_width: 1280
+back_track_height: 720
+
+chandao_left_vertex_idx: 288606
+chandao_right_vertex_idx: 304287
+
+wheel_track_img_path: "/home/xcmg/workspace_cwx/front-stitcher/assets/wheel_track_5.png"
+blade_track_img_path: "/home/xcmg/workspace_cwx/front-stitcher/assets/blade_track.png"
+
+# tracK_label_dir: "/home/xcmg/workspace_cwx/front-stitcher/assets/label_texture"
+
+track_label_texture_path: "/home/xcmg/workspace_cwx/front-stitcher/assets/track_label_texture.png"
+
+wheel_track_width: 0.2
+blade_track_width: 0.2
+
+wheel_track_speed: 3.0

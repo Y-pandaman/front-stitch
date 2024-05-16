@@ -1,0 +1,1069 @@
+syntax = "proto3";
+
+package xcmg_proto;
+
+// 翻斗车 dump truck
+// 挖掘机 digger / excavator / backhoe
+// 装载机 wheel loader
+// 挖掘装载机 backhoe loader
+// 混凝土搅拌车  concrete mixer / cement mixer
+// 推土机 bulldozer
+// 叉车 forklift
+// 压路机 roadroller
+// 吊车 crane
+// 吊塔 tower crane
+// 凿岩机 drill tractor
+// 垃圾车 garbage truck
+// 油罐车 tanker
+// 街道清扫车 street sweeper
+// 拖拉机拖车 tractor trailer
+// 拖车 tow truck
+// 消防车 fire truck
+// 车载式吊车 cherry picker
+
+// 矿卡
+message MineTruck_CAN {
+    float odometry                         = 1;   // 里程
+    float oil_pressure                     = 2;   // 机油压力
+    float speed                            = 3;   // 车速
+    float fuel_level                       = 4;   // 燃油油位
+    float engine_rpm                       = 5;   // 发动机转速
+    float weighing_indicator               = 6;   // 称重示数
+    float engine_operating_time            = 7;   // 发动机运行时间
+    int32 gear                             = 8;   // 档位
+    bool high_beam                         = 9;   // 远光灯
+    bool low_beam                          = 10;  // 近光灯
+    bool left_turn_light                   = 11;  // 左转向灯
+    bool right_turn_light                  = 12;  // 右转向灯
+    bool fog_light                         = 13;  // 雾灯
+    bool outline_light                     = 14;  // 示廓灯
+    bool hydraulic_jogger_light            = 15;  // 液压缓行器灯
+    bool fluid_retardation_light           = 16;  // 液力缓行器灯
+    bool park_linght                       = 17;  // 驻车指示灯
+    bool tas_indicator_light               = 18;  // TAS指示灯
+    bool transmission_blocking_light       = 19;  // 变速箱闭锁指示灯
+    bool cargo_box_status_light            = 20;  // 货箱状态指示灯
+    bool alarm_band_light                  = 21;  // 报警禁鸣
+    bool air_filter_clogging_alarm         = 22;  // 空气过滤器堵塞报警
+    bool unbuckled_alarm                   = 23;  // 未系安全带报警
+    bool car_door_open_alarm               = 24;  // 车门未关报警
+    bool charging_indicator                = 25;  // 充电指示灯
+    bool low_engine_cold_fluid_level_alarm = 26;  // 发动机冷却液低报警
+    bool low_steering_pressure_alarm       = 27;  // 转向压力低报警
+    bool front_brake_halving_alarm         = 28;  // 前制动减半指示
+    bool engine_alarm_yellow_light         = 29;  // 发动机报警黄灯
+    bool engine_alarm_red_light            = 30;  // 发动机报警红灯
+    float oil_temperature                  = 31;  // 机油温度
+    float water_temperature                = 32;  // 水温
+    float real_time_fuel_consumption       = 33;  // 实时油耗
+    float total_fuel_consumption           = 34;  // 总油耗
+    float steering_oil_temperature         = 35;  // 转向油温
+    float retarder_oil_temperature         = 36;  // 缓速器油温
+    float wet_disc_brake_oil_temperature   = 37;  // 湿盘制动油温
+    float front_axle_brake_accumulator_pressure = 38;  // 前桥制动蓄能器压力
+    float rear_axle_brake_accumulator_pressure = 39;  // 后桥制动蓄能器压力
+    float real_time_load_capacity              = 40;  // 实时载重量
+    float load_rate                            = 41;  // 载重百分比
+    float tire_pressure                        = 42;  // 胎压
+}
+
+// 挖掘机
+message Excavator_CAN {
+    float hourly                         = 1;   // 小时计
+    float system_voltage                 = 2;   // 系统电压
+    float engine_water_temperature       = 3;   // 发动机水温
+    float torque_percentage              = 4;   // 扭矩百分比
+    float oil_pressure                   = 5;   // 机油压力
+    float engine_rpm                     = 6;   // 发动机转速
+    float fuel_level                     = 7;   // 燃油油位
+    float main_pump_pressure1            = 8;   // 主泵压力1
+    float main_pump_pressure2            = 9;   // 主泵压力2
+    float hydraulic_oil_temperature      = 10;  // 液压油温
+    float instantaneous_fuel_consumption = 11;  // 瞬时油耗
+    float total_fuel_consumption         = 12;  // 总油耗
+    float braking_pressure               = 13;  // 制动压力
+    float traveling_pressure             = 14;  // 行走压力
+    float transmission_pressure          = 15;  // 变速器压力
+    float liquid_filling_pressure        = 16;  // 充液压力
+    bool hydraulic_oil_alarm             = 17;  // 液压油报警
+    bool brake_oil_clogging_alarm        = 18;  // 制动油堵塞报警
+    bool air_filter_clogging_alarm       = 19;  // 空滤堵塞报警
+    bool oil_and_water_separator_alarm   = 20;  // 油水分离器报警
+    bool engine_fault_alarm              = 21;  // 发动机故障报警
+}
+
+// 平地机
+message Grader_CAN {
+    bool throttle_pedal_low_idle_switch = 1;  // 油门踏板低怠速开关
+    bool throttle_pedal_forced_downshift_switch = 2;  // 油门踏板强制降档开关
+    bool speed_limit_status                     = 3;  // 速度限制状态
+    float throttle_value                        = 4;  // 油门当前值
+    float percentage_of_load_at_current_speed = 5;  // 当前转速下负荷百分比
+    float remote_throttle_pedal_position      = 6;  // 远程油门踏板位置
+    float actual_maximum_available_engine_rated_torque = 7;  // 实际最大可用发动机额定扭矩
+    int32 engine_torque_models                 = 8;  // 发动机扭矩模式
+    float percentage_of_driving_command_torque = 9;  // 驾驶指令百分比扭矩
+    float percentage_of_engine_actual_torque = 10;  // 发动机实际扭矩百分比
+    float engine_speed                       = 11;  // 发动机转速
+    float control_engine_device_source_address = 12;  // 控制发动机设备源地址
+    float starter_model                        = 13;  // 起动机模式
+    float percentage_of_engine_demand_torque = 14;  // 发动机需求扭矩百分比
+    float fuel_pressure                      = 15;  // 燃油压力
+    float engine_oil_level                   = 16;  // 机油液位
+    float engine_lubricating_oil_pressure  = 17;    // 发动机润滑油压力
+    float coolant_level                    = 18;    // 冷却液液位
+    float engine_water_temperature         = 19;    // 发动机水温
+    float fuel_temperature                 = 20;    // 燃油温度
+    float oil_temperature                  = 21;    // 机油温度
+    float fuel_consumption_rate            = 22;    // 燃油消耗速率
+    float instantaneous_fuel_consumption   = 23;    // 瞬时油耗
+    float average_fuel_economy             = 24;    // 平均燃油经济性
+    float relative_pressurization_pressure = 25;    // 相对增压压力
+    float intake_manifold_temperature      = 26;    // 进气歧管温度
+    float absolute_pressurization_pressure = 27;    // 绝对增压压力
+    float exhaust_temperature              = 28;    // 排气温度
+    float total_fuel_usage                 = 29;    // 燃料使用总量
+    bool protection_lamp_statu             = 30;    // 保护灯状态
+    bool environmental_warning_lamp_statu  = 31;    // 环境警告灯状态
+    bool red_stop_lamp_statu               = 32;    // 红色停止灯状态
+    bool MIL_lamp_statu                    = 33;    // MIL灯状态
+    float SPN                              = 34;    // SPN
+    float FMI_code                         = 35;    // FMI码
+    float SPN_MSB                          = 36;    // SPN_MSB
+    float current_fault_count              = 37;    // 当前故障计数
+    float SPN_transform_model              = 38;    // SPN转换模式
+    float control_byte                     = 39;    // 控制字节
+    float total_information_low_byte = 40;  // 总信息字节数（低字节）
+    float total_information_high_byte = 41;  // 总信息字节数（高字节）
+    float total_number_of_packets     = 42;    // 总包数
+    float FF                          = 43;    // FF
+    float PGN_DM                      = 44;    // PGN,DM
+    float total_engine_operating_time   = 45;  // 总的发动机工作时间
+    float cumulative_engine_revolutions = 46;  // 发动机累计转数
+    bool engine_error_protection_lamp_statu = 47;  // 发动机故障-保护灯状态
+    bool engine_error_environmental_warning_lamp_statu = 48;  // 发动机故障-环境警告灯状态
+    bool engine_error_red_stop_lamp_statu = 49;  // 发动机故障-红色停止灯状态
+    bool engine_error_MIL_lamp_statu = 50;  // 发动机故障-MIL灯状态
+    float engine_error_SPN_first_byte = 51;  // 发动机故障-SPN第一个字节
+    float engine_error_SPN_second_byte = 52;  // 发动机故障-SPN第二个字节
+    float engine_error_SPN_MSB         = 53;      // 发动机故障-SPN_MSB
+    float engine_error_FMI_code        = 54;      // 发动机故障-FMI码
+    float engine_error_SPN_transform_model = 55;  // 发动机故障-SPN转换模式
+    float engine_error_current_fault_count = 56;  // 发动机故障-当前故障计数
+    float transmission_direction_back_feed     = 57;  // 变速器方向回送
+    float sub_transmission_direction_back_feed = 58;  // 副变速器方向回送
+    float torque_converter_oil_temperature     = 59;  // 变矩器油温
+    float torque_converter_oil_pressure        = 60;  // 变矩器油压
+    float speed_information                    = 61;  // 车速信息
+    float gear_code                            = 62;  // 档位代码
+    bool reply_to_clutch_separation_request = 63;  // 离合分离请求的回复
+    bool reply_of_parking_braking_state = 64;  // 驻车制动状态的回复
+    bool neutral_lock_function_statu    = 65;  // 空挡锁定功能状态
+    bool current_functional_status_of_operator = 66;  // 操作员当前功能状态
+    bool auto_manual_mode_function_status = 67;  // 自动/手动模式功能状态
+    bool load_detect_status               = 68;  // 加载/未加载检测回复
+    bool forced_downshift_request         = 69;  // 强制降档请求
+    bool four_or_two_wd_function_status   = 70;  // 4WD/2WD功能状态
+    bool forced_downshift_function_status = 71;  // 强制降档功能状态
+    bool disable_shift_function_status    = 72;  // 禁止换档功能状态
+    bool seat_positioning_function_status = 73;  // 座椅定位功能状态
+    bool throttle_pedal_position_free = 74;  // 油门踏板位置（空闲/不空闲）
+    bool throttle_pedal_position_full = 75;  // 油门踏板位置（全/半油门）
+    bool manual_lock_request          = 76;    // 手动锁定请求
+    bool engine_high_idle_speed_request = 77;  // 发动机高怠速请求
+    bool choice_of_high_and_low_range   = 78;  // 高/低范围的请求
+    bool redundant_security_gap_request = 79;  // 冗余安全空挡请求
+    bool system_pressure_status         = 80;  // 系统压力状态
+    bool driving_brake_status           = 81;  // 行车制动器状态
+    bool block_the_request_for_the_highest_gear = 82;  // 封锁最高档位请求
+    bool converter_output_temperature_state = 83;  // 转换器输出温度状态
+    bool exhaust_braking_condition_detection = 84;  // 排气制动状态检测
+    bool reducer_condition_detection         = 85;  // 减速器状态检测
+    bool alarm_reverse                       = 86;  // 反向报警
+    float throttle_pedal_position            = 87;  // 油门踏板位置
+    float brake_pedal_position               = 88;  // 制动踏板位置
+    float engine_turn_speed                  = 89;  // 发动机转速
+    float DANA_fault_area                    = 90;  // DANA Fault area
+    float DANA_fault_type                    = 91;  // DANA Fault Type
+    int32 gearbox_gear_size                  = 92;  // 变速箱档位大小
+    int32 gearbox_gear_direction             = 93;  // 变速箱档位方向
+    float parking_signal                     = 94;  // 驻车信号
+    bool manual_and_automatic_selection      = 95;  // 手动自动选择
+    bool hydraulic_oil_temperature_high_alarm_lamp = 96;  // 液压油温高报警灯
+    bool gearbox_oil_temperature_alarm_lamp  = 97;   // 变速箱油温报警灯
+    bool handle_disconnection_alarm          = 98;   // 手柄断线报警
+    bool gps_communication_status            = 99;   // gps通信状态
+    bool left_handle_communication_status    = 100;  // 左手柄通信状态
+    bool right_handle_communication_status   = 101;  // 有手柄通信状态
+    bool can_line_panel_communication_status = 102;  // can线面板通信状态
+    bool fuel_level_alarm                    = 103;  // 燃油油位报警
+    bool left_lift_cylinder_lift_status      = 104;  // 左提升油缸升
+    bool left_lift_cylinder_drop_status      = 105;  // 左提升油缸降
+    bool right_lift_cylinder_lift_status     = 106;  // 右提升油缸升
+    bool right_lift_cylinder_drop_status     = 107;  // 右提升油缸降
+    bool front_wheel_inclines_to_the_left_status  = 108;  // 前轮左倾
+    bool front_wheel_inclines_to_the_right_status = 109;  // 前轮右倾
+    bool front_wheel_turn_left_status             = 110;  // 前轮左转
+    bool front_wheel_turn_right_status            = 111;  // 前轮右转
+    bool slewing_support_turns_clockwise_status   = 112;  // 回转支撑顺转
+    bool slewing_support_turns_counterwise_status = 113;  // 回转支撑逆转
+    bool left_swing_of_shovel_knife_status        = 114;  // 铲刀左摆
+    bool right_swing_of_shovel_knife_status       = 115;  // 铲刀右摆
+    bool shovel_angle_status                      = 116;  // 铲土角俯角
+    bool shovel_angle_elevation_status            = 117;  // 铲土角仰角
+    bool hinged_left_turn_status                  = 118;  // 铰接左转
+    bool hinged_right_turn_status                 = 119;  // 铰接右转
+    bool shovel_knife_left_lead_out_status        = 120;  // 铲刀左引出
+    bool shovel_knife_right_lead_out_status       = 121;  // 铲刀右引出
+    bool forward_push_up_status                   = 122;  // 前推升
+    bool forward_push_down_status                 = 123;  // 前推降
+    bool after_loose_up_status                    = 124;  // 后松升
+    bool after_loose_down_status                  = 125;  // 后松降
+    bool proportional_output_of_temperature_control_fan_system_status = 126;                                  // 温控风扇系统比例输出
+    bool turn_control_signal_status   = 127;  // 转向控制信号
+    int32 transmission_fault_code_one = 128;  // 变速箱故障代码1
+    int32 indicator_gears_forward     = 129;  // 指示档位（转发）
+    int32 gear_direction_forward      = 130;  // 档位方向（转发）
+    bool auto_manual_switch_forward   = 131;  // 手动自动切换（转发）
+    bool over_speed_handle_steering_alarm    = 132;  // 超速手柄转向报警
+    bool fault_lubrication_centralized_alarm = 133;  // 集中润滑故障报警
+    bool transmission_oil_level_alarm        = 134;  // 变速箱油位报警
+    bool excessive_intercooling_temperature  = 135;  // 中冷温度过高
+    bool brake_system_alarm                  = 136;  // 制动系统报警
+    bool transmission_alarm_light            = 137;  // 变速箱报警灯
+    float speed                              = 138;  // 车辆速度
+    float system_voltage                     = 139;  // 系统电压
+    float fuel_level                         = 140;  // 燃油位
+    float hinge_angle_indication             = 141;  // 铰接角度指示
+    float odometry                           = 142;  // 车辆里程
+    bool shovel_floating_indicator           = 143;  // 铲刀浮动指示灯
+    bool fan_reversal_alarm                  = 144;  // 风扇翻转报警
+    bool hinged_back_in_progress             = 145;  // 铰接回中进行中
+    bool hinged_back_succeed                 = 146;  // 铰接回中完成
+    bool hinged_back_fail                    = 147;  // 铰接回中失败
+    bool hydraulic_tool_lock_indicator   = 148;  // 液压机具闭锁指示灯
+    bool forced_closing_hydraulic_action = 149;  // 强制关闭液压动作
+    bool charging_indicator_status       = 150;  // 充电指示灯
+    bool engine_communication_status     = 151;  // 发动机通信状态
+    bool transmission_communication_status = 152;  // 变速箱通信状态
+    bool centralized_lubrication_of_working_indicator_light = 153;                                        // 集中润滑工作指示
+    bool emergency_turn_indicator           = 154;  // 紧急转向指示灯
+    bool engine_speed_over_speed_alarm_lamp = 155;  // 发动机转速超速报警灯
+    bool winding_ladder_did_not_retract_alarm_lamp = 156;  // 旋梯未收回报警灯
+    bool high_water_temperature_alarm_lamp = 157;  // 水温过高报警灯
+    bool low_oil_pressure_alarm_lamp = 158;  // 机油压力过低报警灯
+    float torque_converter_oil_temperature_forward = 159;  // 变矩器油温
+    bool park_warning_light                        = 160;  // 驻车报警灯
+    bool handle_steering_enable_indicator = 161;  // 手柄转向使能指示灯
+    bool dust_removal_indicator_for_fan   = 162;  // 风扇除尘指示灯
+    bool throttle_lock_indicator          = 163;  // 油门锁定指示灯
+    bool turn_left_lamp_status            = 164;  // 左转向灯
+    bool high_beam_status                 = 165;  // 远光灯
+    bool turn_right_lamp_status           = 166;  // 右转向灯
+    bool oil_return_filter_clogging_alarm_status = 167;  // 回油滤油器堵塞报警
+    bool oil_suction_filter_clogging_alarm = 168;  // 吸油滤油器堵塞报警
+    bool driving_brake_pressure_low_warning_light = 169;  // 行车制动压力低报警灯
+    bool engine_warm_up_indicator_status = 170;  // 发动机预热指示灯
+    bool hydraulic_oil_level_low_alarm_lamp_status = 171;  // 液压油油位低报警灯
+    bool air_filter_clogging_alarm_status     = 172;  // 空滤器堵塞报警
+    bool oil_and_water_separator_alarm_status = 173;  // 油水分离报警
+    bool transmission_oil_pressure_low_warning_light_status = 174;  // 变速箱油压低报警灯
+    bool coolant_level_low_warning_light_status = 175;  // 冷却液液位低报警灯
+    float hydraulic_oil_temperature             = 176;  // 液压油温
+    float back_feeding_depth_into_the_soil = 177;       // 后送入土深度
+    float transmission_system_pressure_forward = 178;  // 变速箱系统压力（转发）
+    bool low_beam                              = 179;  // 近光灯
+    bool outline_lamp                          = 180;  // 示廓灯
+    bool can_bus_fault_alarm                   = 181;  // can总线故障报警
+    bool engine_waiting_for_start_indication = 182;  // 发动机等待启动指示
+    bool engine_protect_indication_lamp      = 183;  // 发动机保护指示灯
+    bool diff_lock_indication                = 184;  // 差速锁指示
+    bool accumulator_indication_lamp         = 185;  // 蓄能器指示
+    float speed_signal                       = 186;  // 车速信号
+    int32 transmission_fault_codes_2         = 187;  // 变速箱故障代码2
+    float emergency_steering_pressure        = 188;  // 应急转向压力
+    bytes shovel_three_speed                 = 189;  // 铲刀三速
+    bool engine_throttle_hold_auto_mode_on_indication = 190;  // 发动机油门保持自动模式开启指示
+    bool engine_throttle_hold_mode_setting_completion_indication = 191;  // 发动机油门保持模式设定完成指示
+    bool engine_throttle_hold_manual_mode_on_indication = 192;  // 发动机油门保持手动模式开启指示
+    bool transmission_blocking_status          = 193;  // 变速箱闭锁状态
+    bool hydraulic_pin_pulling_in_place_status = 194;  // 液力拔销就位
+    bool driver_in_position_signal             = 195;  // 驾驶员就位信号
+    bool port_failure_1_port                   = 196;  // 端口故障1端口号
+    bool port_failure_1_failure_mode        = 197;  // 端口故障1故障模式
+    bool port_failure_2_port                = 198;  // 端口故障2端口号
+    bool port_failure_2_failure_mode        = 199;  // 端口故障2故障模式
+    bool port_failure_3_port                = 200;  // 端口故障3端口号
+    bool port_failure_3_failure_mode        = 201;  // 端口故障3故障模式
+    bool port_failure_4_port                = 202;  // 端口故障4端口号
+    bool port_failure_4_failure_mode        = 203;  // 端口故障4故障模式
+    bool port_failure_5_port                = 204;  // 端口故障5端口号
+    bool port_failure_5_failure_mode        = 205;  // 端口故障5故障模式
+    bool port_failure_6_port                = 206;  // 端口故障6端口号
+    bool port_failure_6_failure_mode        = 207;  // 端口故障6故障模式
+    bool port_failure_7_port                = 208;  // 端口故障7端口号
+    bool port_failure_7_failure_mode        = 209;  // 端口故障7故障模式
+    bool port_failure_8_port                = 210;  // 端口故障8端口号
+    bool port_failure_8_failure_mode        = 211;  // 端口故障8故障模式
+    bool turn_left_lamp                     = 212;  // 左转向灯
+    bool turn_right_lamp                    = 213;  // 右转向灯
+    bool oil_return_filter_clogging_alarm   = 214;  // 回油滤油堵塞报警
+    bool engine_warm_up_indicator           = 215;  // 发动机预热指示灯
+    bool hydraulic_oil_level_low_alarm_lamp = 216;  // 液压油油位低报警灯
+    bool air_filter_clogging_alarm          = 217;  // 空滤器堵塞报警
+    bool oil_and_water_separator_alarm      = 218;  // 油水分离报警
+    bool transmission_oil_pressure_low_warning_light = 219;                                     // 变速箱油压低报警灯
+    bool coolant_level_low_warning_light = 220;  // 冷却液液位低报警灯
+    bool emergency_steering_test_switch  = 221;  // 应急转向测试开关
+    bool transmission_oil_level_switch   = 222;  // 变速箱油位开关
+    bool differential_lock_indication    = 223;  // 差速锁指示
+    bool positioning_signal              = 224;  // 就位信号
+    bool hydraulic_pin_pulling_in_place  = 225;  // 液力拔销就位
+    float hydraulic_oil_temperature_sensor = 226;  // 液压油温传感器
+    float fuel_level_sensor                = 227;  // 燃油油位传感器
+    bool accumulator_button                = 228;  // 蓄能器按钮
+    bool cruise_mode_switch                = 229;  // 巡航模式开关
+    bool stop_signal                       = 230;  // 刹车信号
+    bool accumulator_relay                 = 231;  // 蓄能器继电器
+    bool ladder_motor_relay                = 232;  // 爬梯马达继电器
+    bool air_conditioning_relay            = 233;  // 空调继电器
+    bool neutral_relay                     = 234;  // 空挡继电器
+    bool differential_lock_relay           = 235;  // 差速锁继电器
+    bool handle_differential_lock_button   = 236;  // 手柄按钮：差速锁
+    bool handle_shovel_three_speed_button = 237;  // 手柄按钮：铲刀三速
+    bool engine_throttle_manual_mode      = 238;  // 发动机油门手动模式
+    bool engine_fixed_speed_setting       = 239;  // 发动机定速设定
+    bool engine_throttle_auto_mode        = 240;  // 发动机油门自动模式
+    bool save_energy_mode                 = 241;  // 节能模式
+    bool rocker_switch_throttle_recovery_button = 242;  // 翘板开关油门恢复按钮
+    bool shovel_floating_button                 = 243;  // 铲刀浮动按钮
+    bool parking_solenoid_valve                 = 244;  // 驻车电磁阀
+    bool steering_working_pressure_switch = 245;  // 转向器工作压力开关
+    bool parking_pressure_switch          = 246;  // 驻车压力开关
+    bool hydraulic_machine_latching_switch = 247;  // 液压机具闭锁开关
+    bool left_handle_enabling_sensing      = 248;  // 左手柄使能感应
+    bool right_handle_enabling_sensing     = 249;  // 右手柄使能感应
+    bool turn_enable_button                = 250;  // 转向使能按键
+    bool front_wheel_left_tilt_button      = 251;  // 前轮左倾斜按键
+    bool front_wheel_right_tilt_button     = 252;  // 前轮右倾斜按键
+    bool plus_gear_button                  = 253;  // 加档位按键
+    bool minus_gear_button                 = 254;  // 减档位按键
+    bool directional_selection_forward_button = 255;  // 方向选择向前按键
+    bool direction_selection_back_button   = 256;  // 方向选择向后按键
+    bool shovel_left_swing_button          = 257;  // 铲刀左摆动按键
+    bool shovel_right_swing_button         = 258;  // 铲刀右摆动按键
+    bool articulated_back_to_center_button = 259;  // 铰接回中按键
+    bool transmission_switching_and_enable_button = 260;                                   // 变速箱切换及使能按键
+    bool charging_indicator            = 261;  // 充电指示灯
+    bool high_beam                     = 262;  // 远光灯
+    bool centralized_lubricatio_switch = 263;  // 集中润滑开关
+    bool fan_dust_removal_switch       = 264;  // 风扇除尘开关
+    bool temperature_control_fan_system_reversing_switch_solenoid_valve = 265;  // 温控风扇系统反转开关电磁阀
+    bool cab_light_relay                 = 266;  // 驾驶室灯继电器
+    bool rear_work_light_relay           = 267;  // 后工作灯继电器
+    bool channel_light_relay             = 268;  // 通道灯继电器
+    bool headlight_realy                 = 269;  //  前大灯继电器
+    bool headlight_auxiliary_light_relay = 270;  // 前大灯辅助灯继电器
+    bool rotary_alarm_light_relay_status = 271;  // 旋转报警灯继电器
+    bool repair_light_relay              = 272;  // 维修灯继电器
+    bool emergency_signal_relay          = 273;  // 紧急信号灯继电器
+    bool outline_light_realy             = 274;  // 示廓灯继电器
+    bool rear_window_water_spray_relay   = 275;  // 后窗喷水继电器
+    bool emergency_steering_relay        = 276;  // 紧急转向继电器
+    bool centralized_lubrication_relay   = 277;  // 集中润滑继电器
+    bool left_shovel_blade_floating_solenoid_valve = 278;  // 左铲刀浮动电磁阀
+    bool right_shovel_blade_floating_solenoid_valve = 279;  // 右铲刀浮动电磁阀
+    bool engine_communication_status_bus = 280;  // 发动机通信状态 总线故障
+    bool transmission_communication_status_bus = 281;  // 变速箱通信状态 总线故障
+    float rear_loose_cylinder_sensor = 282;  // 后松油缸传感器
+    bool door_touch_switches         = 283;  // 门碰开关
+    bool shovel_proximity_switch     = 284;  // 铲刀接近开关
+    bool climbing_ladder_in_position_proximity_switch =
+        285;  // 爬梯上就位接近开关
+    bool centralized_lubrication_front_end_pressure_switch =
+        286;  // 集中润滑前端压力开关
+    bool centralized_lubrication_back_end_pressure_switch =
+        287;  // 集中润滑末端压力开关
+    bool ladder_climbing_buzzer_relay     = 288;  // 爬梯蜂鸣器继电器
+    bool climbing_motor_switch_relay      = 289;  // 爬梯马达开关电磁阀
+    bool engine_power_curve               = 290;  // 发动机功率曲线
+    float left_handle_x_axis_input_analog = 291;  // 左手柄x轴输入的模拟量
+    float right_handle_x_axis_input_analog = 292;  // 右手柄x轴输入的模拟量
+    float left_handle_y_axis_input_analog = 293;  // 左手柄x轴输入的模拟量
+    float right_handle_y_axis_input_analog = 294;  // 右手柄x轴输入的模拟量
+    float analog_input_by_pushing_forward_the_roller =
+        295;  // 前推滚轮输入的模拟量
+    float analog_of_articulated_steering_roller_input =
+        296;  // 铰接转向滚轮输入的模拟量
+    float analog_input_for_shovel_angle_lift_roller =
+        297;  // 铲土角升降滚轮输入的模拟量
+    float analog_input_for_shovel_rotary_roller =
+        298;  // 铲刀回转滚轮输入的模拟量
+    float analog_input_of_rear_loosening_roller =
+        299;  // 后松升降滚轮输入的模拟量
+    float analog_input_from_articulating_cylinder_sensor =
+        300;  // 铰接油缸传感器输入的模拟量
+    float torque_converter_oil_temperature_sensor = 301;  // 变矩器油温传感器
+    float speed_signal_p1                         = 302;  // 车速信号 p1
+    float left_lifting_cylinder_lift              = 303;  // 左提升油缸升
+    float left_lifting_cylinder_lowering          = 304;  // 左提升油缸降
+    float front_wheel_leaning_left                = 305;  // 前轮左倾
+    float front_wheel_cleaning_right              = 306;  // 前轮右倾
+    float front_wheel_left_turn                   = 307;  // 前轮左转
+    float front_wheel_right_turn                  = 308;  // 前轮右转
+    float right_lifting_cylinder_lift             = 309;  // 右提升油缸升
+    float right_lifting_cylinder_lowering         = 310;  // 右提升油缸降
+    float rotation_support_smooth_rotation        = 311;  // 回转支撑顺转
+    float rotation_support_reversal               = 312;  // 回转支撑逆转
+    float spatula_left_swing                      = 313;  // 铲刀左摆
+    float spatula_right_swing                     = 314;  // 铲刀右摆
+    float top_angel_of_shovel_angle               = 315;  // 铲土角俯角
+    float shovel_angle_elevation_angle            = 316;  // 铲土角仰角
+    float articulated_left_turn                   = 317;  // 铰接左转
+    float articulated_right_turn                  = 318;  // 铰接右转
+    float shovel_left_lead_out                    = 319;  // 铲刀左引出
+    float shovel_right_lead_out                   = 320;  // 铲刀右引出
+    float front_push_up                           = 321;  // 前推升
+    float front_push_down                         = 322;  // 前推降
+    float after_loose_up                          = 323;  // 后松升
+    float after_loose_down                        = 324;  // 后松降
+    float temperature_controlled_fan_system_proportional_output =
+        325;  // 温控风扇系统比例输出
+    float throttle_signal                    = 326;  // 油门信号
+    float transmission_oil_pressure_sensor_A = 327;  // 变速箱油压传感器（电流）
+    float hydraulic_steering_pressure_sensor = 328;  // 液压转向压力传感器
+    float transmission_oil_pressure_sensor_R = 329;  // 变速箱油压传感器（电阻）
+    float turn_control_signal                = 330;  // 转向控制信号
+    int32 model_code                         = 331;  // 车型代码
+    int32 electronic_control_program_version = 332;  // 电控程序版本
+    bool locked_status                       = 333;  // 锁车状态
+    bool anti_tamper_status                  = 334;  // 防拆状态
+    bool about_to_lock_cat                   = 335;  // 即将锁车
+
+    uint32 danfoss_main_controller_fault_SPN_code =
+        336;  // 丹福斯主控制器故障SPN码
+    uint32 danfoss_main_controller_fault_FMI_code =
+        337;  // 丹福斯主控制器故障FMI码
+    uint32 danfoss_main_controller_fault_numbers =
+        338;  // 丹福斯主控制器故障次数
+    uint32 danfoss_safe_controller_fault_FMI_code =
+        339;  // 丹福斯安全控制器故障FMI码
+    uint32 danfoss_safe_controller_fault_numbes =
+        340;  // 丹福斯安全控制器故障次数
+    uint32 danfoss_safe_controller_fault_SPN_code =
+        341;  // 丹福斯安全控制器故障SPN码
+
+    bool slope_control_right_hand_incremental_switch =
+        342;  // 坡度控制右侧增量开关
+    bool slope_control_right_hand_reduction_switch =
+        343;  // 坡度控制右侧减量开关
+    bool cross_slope_control_left_side_automatic_switch =
+        344;  // 横坡控制左侧自动开关
+    bool cross_slope_control_left_side_manual_switch =
+        345;  // 横坡控制左侧手动开关
+    bool cross_slope_control_right_side_automatic_switch =
+        346;  // 横坡控制左侧自动开关
+    bool cross_slope_control_right_side_manual_switch =
+        347;  // 横坡控制左侧手动开关
+    bool slope_control_left_hand_incremental_switch =
+        348;  // 坡度控制右侧增量开关
+    bool slope_control_left_hand_reduction_switch =
+        349;  // 坡度控制右侧减量开关
+    bool slope_control_side_shift_automatic_switch =
+        350;  // 坡度控制侧移自动开关
+    bool slope_control_side_shift_manual_switch = 351;  // 坡度控制侧移手动开关
+    bool centralized_lubrication_bypass_valve = 352;  // 集中润滑旁通阀
+    bool heated_rearview_mirror_switch        = 353;  // 后视镜加热开关
+
+    bool main_steering_gear_failure_light_alarm = 354;  // 主转向器故障光报警
+    bool main_steering_gear_failure_sound_and_light_alarm =
+        355;  // 主转向器故障声光报警
+    bool door_switch_alarm                 = 356;  // 门开关报警
+    bool front_fog_light_alarm             = 357;  // 前雾灯报警
+    bool back_fog_light_alarm              = 358;  // 后雾灯报警
+    bool transmission_oil_level_high_alarm = 359;  // 变速箱油位高报警
+    bool transmission_oil_level_low_alarm  = 360;  // 变速箱油位低报警
+    bool transmission_sensor_abnormal_alarm = 361;  // 变速箱传感器异常报警
+
+    float danfoss_status_forwarding = 362;  // 丹福斯状态转发
+
+    bool park_rocker_switch_signal          = 363;  // 驻车翘板开关信号
+    bool to_do_1                            = 364;  // 预留
+    bool key_power_relay                    = 365;  // 钥匙电源继电器
+    bool danfoss_parking_solenoid_valve     = 366;  // 驻车电磁阀
+    bool transmission_park_signal           = 367;  // 变速箱驻车信号
+    bool transmission_blocking              = 368;  // 变速箱闭锁
+    bool to_do_2                            = 369;  // 预留
+    bool differential_lock_solenoid_valve   = 370;  // 差速锁电磁阀
+    bool fan_speed_sensor                   = 371;  // 风扇速度传感器
+    float left_rear_wheel_speed             = 372;  // 左后轮转速
+    float right_rear_wheel_speed            = 373;  // 右后轮转速
+    float shovel_reversal_2                 = 374;  // 铲刀逆转2
+    float shovel_knife_smooth_turn_2        = 375;  // 铲刀顺转2
+    float parking_pressure_sensor           = 376;  //  驻车压力传感器
+    float differential_lock_pressure_sensor = 377;  // 差速锁压力传感器
+
+    float rear_pine_cylinder_sensor    = 378;  // 后松油缸传感器
+    float shovel_slope_signal          = 379;  // 铲刀坡度信号
+    float shovel_rotation_angle_signal = 380;  // 铲刀旋转角度信号
+    float forward_push_roller_signal   = 381;  // 前推滚轮信号
+    float rear_loosening_rocker_switch_signal = 382;  // 后松翘板开关信号
+    float pendulum_anti_collision_sensor_1    = 383;  // 摆架防碰传感器1
+    float pendulum_anti_collision_sensor_2    = 384;  // 摆架防碰传感器2
+    bool rear_axle_left_wheel_oil_temperature_high_alarm =
+        385;  // 后桥左轮油温高报警
+    bool rear_axle_right_wheel_oil_temperature_high_alarm =
+        386;  // 后桥右轮油温高报警
+
+    float rear_axle_left_wheel_oil_temperature = 387;  // 后桥左轮油温温度
+    float rear_axle_right_wheel_oil_temperature = 388;  // 后桥右轮油温温度
+    float shovel_rotation_angle_calibration_value = 389;  // 铲刀旋转角度标定值
+
+    bool key_switch_power_up = 390;  // 钥匙开关上电
+    bool centralized_lubrication_front_end_pressure_switch_alarm =
+        391;  // 集中润滑前端压力开关报警
+    bool centralized_lubrication_back_end_pressure_switch_alarm =
+        392;  // 集中润滑末端压力开关报警
+    bool centralized_low_lube_oil_level_alarm = 393;  // 集中润滑油位低报警
+    bool driver_cab_left_door_switch_signal = 394;  // 驾驶室左门开关信号
+    bool driver_cab_right_door_switch_signal = 395;  // 驾驶室右门开关信号
+    bool oil_suction_oil_filter_switch       = 396;  // 吸油油滤开关
+    bool return_oil_filter_switch            = 397;  // 回油油滤开关
+    bool platform_light_switch               = 398;  // 平台灯开关
+    bool seat_belt_switch                    = 399;  // 安全带开关
+    bool to_do_3                             = 400;  // 预留
+    bool to_do_4                             = 401;  // 预留
+    bool to_do_5                             = 402;  // 预留
+    bool to_do_6                             = 403;  // 预留
+    bool to_do_7                             = 404;  // 预留
+    bool to_do_8                             = 405;  // 预留
+    bool to_do_9                             = 406;  // 预留
+    bool centralized_lubrication_pump_relay = 407;   // 集中润滑泵继电器
+    bool forward_push_floating_solenoid_valve = 408;  // 前推浮动电磁阀
+    bool radio_mute                           = 409;  // 收音机静音
+    bool walkie_talkie_1                      = 410;  // 对讲机1
+    bool left_accumulator_solenoid_valve      = 411;  // 左蓄能器电磁阀
+    bool right_accumulator_solenoid_valve     = 412;  // 右蓄能器电磁阀
+    bool rotary_ring_lubrication_solenoid_valve = 413;  // 回转圈润滑电磁阀
+    bool trailer_motor_control_signal = 414;  // 拖车电机控制信号
+    bool rotary_alarm_light_relay     = 415;  // 旋转报警灯继电器
+    bool low_beam_relay               = 416;  // 近光灯继电器
+    bool cab_headlight_relay          = 417;  // 驾驶室前灯继电器
+    bool cab_rear_light_relay         = 418;  // 驾驶室后灯继电器
+    bool shovel_light_relay           = 419;  // 铲刀灯继电器
+    bool hood_rear_light_relay        = 420;  // 机罩后灯继电器
+    bool platform_light_relay         = 421;  // 平台灯继电器
+    bool outline_light_relay          = 422;  // 示廓灯继电器
+    bool high_beam_relay              = 423;  // 远光灯继电器
+    bool supercharger_relay           = 424;  // 增压器继电器
+    bool defrost_fan_relay            = 425;  // 除霜风扇继电器
+    bool to_do_10                     = 426;  // 预留
+    bool to_do_11                     = 427;  // 预留
+    bool heated_rearview_mirror_relay = 428;  // 后视镜加热继电器
+    bool hydraulic_oil_preheating_solenoid_valve = 429;  // 液压油预热电磁阀
+    bool to_do_12                                = 430;  // 预留
+
+    bool remote_state = 431;  //远程状态
+
+    IMU imu_data = 432;  // IMU回传数据
+
+    //按键状态
+    bool engine_fan_reverse_switch      = 433;
+    bool centralized_lubrication_switch = 434;
+    bool overload_switch                = 435;
+    bool high_light_switch              = 436;
+    bool dipped_headlight_switch        = 437;
+    bool position_light_switch          = 438;
+    bool cab_headlight_switch           = 439;
+    bool blade_verticallight_switch     = 440;
+    bool rearlight_switch               = 441;
+    bool cab_rearlight_switch           = 442;
+    bool grader_rearlight_switch        = 443;
+    bool grader_brake                   = 444;
+
+
+    uint32 blades_left      = 445;  //铲刀左升降油缸传感器
+    uint32 blades_right     = 446;  //铲刀右升降油缸传感器
+    uint32 blades_slante    = 447;  //铲刀斜拉油缸传感器
+    uint32 blades_translate = 448;  //铲刀引出油缸传感器
+
+    uint32 shovel_corner_left  = 449;  //铲土角左油缸
+    uint32 shovel_corner_right = 450;  //铲土角右油缸
+    uint32 turn_circle         = 451;  //回转圈传感器
+
+    uint32 gps_satellite_num = 452; // gps卫星数量
+    uint32 gps_latitude = 453; // 南北纬
+    uint32 gps_longitude            = 454;  // 东西经
+    uint32 gps_gsm_signal_quality   = 455;  // gsm信号质量
+    uint32 gps_terminal_power_percentage = 456;  // 终端电池百分比
+    uint32 gps_direction = 457; //方向
+
+
+    // bool pre_driver_controller_communication_status = 27; //
+    // 前驱控制器通讯状态 bool fan_dust_removal = 28; // 风扇除尘 bool
+    // differential_lock = 29;                                               //
+    // 差速锁 bool machine_lock = 30; // 机具锁定 bool
+    // left_shovel_blade_floating = 31;                                      //
+    // 左铲刀浮动 bool right_shovel_blade_floating = 32; // 右铲刀浮动 bool
+    // center_lock = 33;                                                     //
+    // 中心锁 bool left_overload_protection = 34; // 左过载保护 bool
+    // right_overload_protection = 35;                                       //
+    // 右过载保护 bool emergency_steering_switch = 36; // 应急转向开关 bool
+    // engine_fixed_speed_auto = 37;                                         //
+    // 发动机定转速自动 bool engine_fixed_speed_manual = 38; // 发动机定转速手动
+    // bool fixed_speed_setting_or_acceleration = 39; // 定转速设定或加速 bool
+    // data_logger_communication_status = 40;                                //
+    // 数据记录仪通讯状态 bool steering_controller_communication_status = 41; //
+    // 转向控制器通讯状态 bool SASA_communication_status = 42; // SASA通讯状态
+    // bool control_auxiliary_communication_status = 43; // 辅助控制通讯状态
+    // bool front_drive_enable_switch = 44; // 前驱使能开关 bool
+    // front_drive_first_gear = 45;                                          //
+    // 前驱一档 bool front_drive_second_gear = 46; // 前驱二挡 bool
+    // energy_saving_mode_switch = 47;                                       //
+    // 节能模式开关 bool excessive_difference_handle_steering_angle = 65; //
+    // 手柄转向角度差别过大 bool right_shovel_floating_indicator = 68; //
+    // 右铲刀浮动指示灯 bool park_switch_signal = 109; // 解除驻车开关信号 bool
+    // key_on_power_indication = 110;                                        //
+    // 钥匙上电指示 bool emergency_stop_signal = 111; // 急停信号 bool
+    // energy_saving_mode = 112;                                             //
+    // 节能模式 bool left_accumulator_relay = 113; // 左蓄能器继电器 bool
+    // right_accumulator_relay = 114;                                        //
+    // 右蓄能器继电器 bool centralized_lubrication_low_level_alarm = 115; //
+    // 集中润滑低液位报警 bool centralized_lubrication_pressure_alarm = 116; //
+    // 集中润滑压力报警 bool centralized_lubrication_pump_operation = 117; //
+    // 集中润滑泵运行 bool hydraulic_pin_puller_enable = 118; // 液力拔销使能
+    // bool manual_auto_relay = 119; // 手动自动档继电器 bool forward_valve =
+    // 120;                                                  // 前进阀 bool
+    // back_valve = 121;                                                     //
+    // 后退阀 bool front_drive_1_speed_valve = 122; // 前驱1档阀 bool
+    // front_drive_2_speed_valve = 123;                                      //
+    // 前驱2档阀 bool intercom_1 = 124; // 对讲1 bool intercom_2 = 125; // 对讲2
+    // bool radio_mute = 126; // 收音机静音 bool delayed_power_off = 127; //
+    // 延时断电 bool centralized_lubrication_solenoid_valve_1_rotary_ring = 128;
+    // // 集中润滑电磁阀1（回转圈） bool
+    // centralized_lubrication_solenoid_valve_2 = 129;                       //
+    // 集中润滑电磁阀2 bool
+    // temperature_control_fan_system_reversing_switch_solenoid_valve = 130; //
+    // 温控风扇系统反转开关电磁阀 bool centralized_lubrication_power_relay =
+    // 131;                            // 集中润滑电源继电器 float
+    // left_steering_cylinder_sensor = 132;                                 //
+    // 左转向油缸传感器 float right_steering_cylinder_sensor = 156; //
+    // 右转向油缸传感器 float push_forward_analog_signal = 159; //
+    // 前推模拟量信号 float after_loose_analog_signal = 160; // 后松模拟量信号
+}
+
+// IMU
+message IMU {
+    //欧拉角
+    float EulerX = 1;
+    float EulerY = 2;
+    float EulerZ = 3;
+    //加速度
+    float AccRawX = 4;
+    float AccRawY = 5;
+    float AccRawZ = 6;
+}
+
+// 滑移
+message Huayi_CAN {
+    // 车辆状态信息 ID：0x18F40117
+    float low_voltage_cell_voltage         = 1;  // 低压电池电压
+    bool vehicle_condition_turn_left_light = 2;  // 车辆状态——左转向灯
+    bool vehicle_condition_turn_right_light = 3;  // 车辆状态——右转向灯
+    bool vehicle_condition_start_signal   = 4;  // 车辆状态——START信号
+    bool vehicle_condition_on_gear_signal = 5;  // 车辆状态——ON档信号
+    bool vehicle_condition_add_float_flag = 6;  // 车辆状态——增加浮动位标志
+    bool instrument_alarm_condition_stop_status = 7;  // 仪表报警状态——STOP状态
+    bool instrument_alarm_condition_handbrake_status =
+        8;  // 仪表报警状态——手刹状态
+    bool instrument_alarm_condition_brake_failure =
+        9;  // 仪表报警状态——制动故障报警
+    float front_brake_reservoir_pressure = 10;  // 前制动储气筒气压
+    float back_brake_reservoir_pressure  = 11;  // 后制动储气筒气压
+    bool dynamic_mode                 = 12;  // 模式设置——动力模式
+    bool transcendental_mode          = 13;  // 模式设置——超越模式
+    bool micro_dynamic_or_normal_mode = 14;  // 模式设置——微动/正常模式
+    bool tortoise_or_rabbit_model = 15;  // 模式设置——乌龟/兔子模式
+    bool H_model                  = 16;       // 模式设置——H模式
+    float hydraulic_motor_idle_setting = 17;  // 液压电机怠速设定
+
+    // 车辆里程信息 ID：0x18F40217
+    float total_odometry                        = 18;  // 总里程
+    uint32 air_pump_start_stop_resistance_value = 19;  // 气泵启停阻值
+    uint32 instrument_life_signal               = 20;  // 仪表生命信号
+    bool button_double_flash                    = 21;  // 双闪按钮
+    bool button_rotary_alarm_light              = 22;  // 旋转报警灯按钮
+    bool button_back_light                      = 23;  // 后灯按钮
+    bool button_front_and_profile_light = 24;  // 前灯及示廓灯按钮
+    bool button_turn_right              = 25;  // 右转向按钮
+    bool button_turn_left               = 26;  // 左转向按钮
+    bool button_unlock                  = 27;  // 解除锁定按钮
+    bool button_transcendental          = 28;  // 超越按钮
+    float instrument_program_version    = 29;  // 仪表程序版本
+
+    // 自定义曲线 ID：0x18F40317
+    uint32 left_wheel_speed_ratio_setting  = 30;  // 左轮转速比设置
+    uint32 right_wheel_speed_ratio_setting = 31;  // 右轮转速比设置
+    uint32 move_dynamic_setting            = 32;  // 行走动力设置
+    uint32 hydraulic_motor_speed_ratio_setting = 33;  // 液压电机转速比例设置
+    uint32 move_speed_setting                  = 34;  // 行走速度设置
+
+    // 自定义曲线 ID：0x18F40417（整车编号 / 充电VIN码）
+    uint32 vin_frame_num           = 35;  // VIN帧序号
+    uint32 vehicle_vin_code_1_8_15 = 36;  // 车辆VIN码1，8，15字符(ASCII码)
+    uint32 vehicle_vin_code_2_9_16 = 37;  // 车辆VIN码2，9，16字符(ASCII码)
+    uint32 vehicle_vin_code_3_10_17 = 38;  // 车辆VIN码3，10，17字符(ASCII码)
+    uint32 vehicle_vin_code_4_11 = 39;  // 车辆VIN码4，11字符(ASCII码)
+    uint32 vehicle_vin_code_5_12 = 40;  // 车辆VIN码5，12字符(ASCII码)
+    uint32 vehicle_vin_code_6_13 = 41;  // 车辆VIN码6，13字符(ASCII码)
+    uint32 vehicle_vin_code_7_14 = 42;  // 车辆VIN码7，14字符(ASCII码)
+
+    // 整车信息1 ID：0x18F101D0
+    bytes vehicle_status                 = 43;  // 整车状态
+    bytes system_interlock_status        = 44;  // 系统互锁状态
+    bytes vcu_self_check_status          = 45;  // VCU自检状态
+    bytes high_low_speed_change          = 46;  // 高速/低速切换
+    bytes vehicle_speed_low_byte         = 47;  // 车辆速度低字节
+    bytes vehicle_speed_high_byte        = 48;  // 车辆速度高字节
+    float gear_status                    = 49;  // 档位状态
+    bool collision_warning               = 50;  // 碰撞预警
+    bool lane_departure_warning          = 51;  // 车道偏离预警
+    bool gear_logic_fault                = 52;  // 档位逻辑故障
+    bool driver_condition_in_ready_state = 53;  // READY状态下驾驶员情况
+    bool assembly_maintenance_reminder   = 54;  // 总成保养提醒
+    bool vcu_can_communication_fault     = 55;  // VCU CAN通信故障
+    bool transmission_fault              = 56;  // 变速器故障
+    bool vcu_fault                       = 57;  // VCU故障
+    bytes vehicle_info_running_status    = 58;  // 车辆信息-运行状态
+    bytes vehicle_info_vehicle_status    = 59;  // 车辆信息-车辆状态
+    uint32 life_signal                   = 60;  // LIFE信号
+
+    // 整车信息2 ID：0x18F103D0
+    float vcu_version                  = 61;  // VCU版本信息
+    bytes low_remaining_mileage_byte   = 62;  // 剩余里程低字节
+    bytes high_remaining_mileage_byte  = 63;  // 剩余里程高字节
+    float gas_pedal_condition          = 64;  // 油门踏板状态
+    float brake_pedal_condition        = 65;  // 制动踏板状态
+    bool vehicle_model_energy_revovery = 66;  // 整车模式-能量回收模式
+    bool vehicle_model_claudication    = 67;  // 整车模式-跛行模式
+    bool vehicle_model_trailer         = 68;  // 整车模式-拖车模式
+    bool vehicle_model_dynamic_economic = 69;  // 整车模式-动力经济模式
+    bool vehicle_model_shift            = 70;  // 整车模式-换挡模式
+    bool vehicle_model_vehicle_running = 71;  // 整车模式-车辆行驶模式
+    bool switch_info_float_flag        = 72;  // 开关量信息-浮动位标志
+    bool switch_info_total_unlock_signal = 73;  // 开关量信息-总解除锁定信号
+    bool switch_info_unlock              = 74;  // 开关量信息-解除锁定
+    bool switch_info_transcendental_switch = 75;  // 开关量信息-超越开关
+    bool switch_info_guardrail_signal = 76;  // 开关量信息-护栏信号
+    bool switch_info_door_signal      = 77;  // 开关量信息-门信号
+    bool switch_info_handbrake        = 78;  // 开关量信息-手刹
+    bool switch_info_footbrake        = 79;  // 开关量信息-脚刹
+    bool fan_enable                   = 80;  // 风扇使能
+    bool air_conditioner_enable       = 81;  // 空调使能
+    bool air_compressor_enable        = 82;  // 空压机使能
+    bool three_in_one_relay_enable    = 83;  // 三合一继电器使能
+
+    // 整车信息3 ID：0X18F111D0
+    bool fan_rotation_direction      = 84;  // 风扇旋转方向
+    bool pump_condition              = 85;  // 水泵状态
+    bool hydraulic_lock_condition    = 86;  // 液压锁状态
+    bool poweroff_condition          = 87;  // 关机状态
+    bool fan_start_stop_condition    = 88;  // 风扇启停
+    bool horn_relay_condition        = 89;  // 喇叭继电器状态
+    bool astern_horn_relay_condition = 90;  // 倒车喇叭继电器状态
+    bool travel_solenoid_valve_relay_condition = 91;  // 行驶电磁阀继电器状态
+    float fan_speed                            = 92;  // 风扇转速
+    float hydraulic_oil_temperature            = 93;  // 液压油温
+    float water_temperature                    = 94;  // 水温
+    float left_handle_opening                  = 95;  // 左手柄开度
+    float right_handle_opening                 = 96;  // 右手柄开度
+    float hydraulic_oil_temperature_resistance = 97;  // 液压油温阻值
+
+    // 整车信息4 ID：0X18F112D0
+    float left_reducer_temperature            = 98;  // 左侧减速机温度
+    float left_reducer_temperature_resistance = 99;  // 左侧减速机温度阻值
+    float right_reducer_temperature           = 100;  // 右侧减速机温度
+    float right_reducer_temperature_resistance = 101;  // 右侧减速机温度阻值
+    float vcu_fault_code                       = 102;  // VCU故障代码
+    float current_max_fault_level = 103;  // 当前最高故障等级
+    float set_max_speed_low_byte  = 104;  // 设置最高车速低字节
+    float set_max_speed_high_byte = 105;  // 设置最高车速高字节
+
+    // 整车信息5 ID：0X18F113D0
+    float finger_wheel_forward_push_solenoid_valve_current =
+        106;  // 指轮前推电磁阀电流
+    float finger_wheel_back_push_solenoid_valve_current =
+        107;  // 指轮后推电磁阀电流
+    float boom_rising_solenoid_valve_current = 108;  // 动臂上升电磁阀电流
+    float boom_down_solenoid_valve_current = 109;  // 动臂下降电磁阀电流
+    float boom_receiving_bucket_solenoid_valve_current =
+        110;  // 动臂收斗电磁阀电流
+    float boom_tipper_solenoid_valve_current = 111;  // 动臂翻斗电磁阀电流
+
+    // 整车信息7（手柄故障） ID：0X18F115D0
+    uint32 left_handle_fault_level             = 112;  // 左手柄故障等级
+    uint32 right_handle_fault_level            = 113;  // 有手柄故障等级
+    uint32 left_handle_axis_x_voltage_too_high = 114;  // 左手柄X轴线电压过高
+    uint32 left_handle_axis_y_voltage_too_high = 115;  // 左手柄Y轴线电压过高
+    uint32 left_handle_roller_axis_x_voltage_too_high =
+        116;  // 左手柄滚轮X轴线电压过高
+    uint32 left_handle_roller_axis_y_voltage_too_high =
+        117;  // 左手柄滚轮Y轴线电压过高
+    uint32 left_handle_roller_axis_z_voltage_too_high =
+        118;  // 左手柄滚轮Z轴线电压过高
+    uint32 left_handle_axis_x_voltage_too_low = 119;  // 左手柄X轴线电压过低
+    uint32 left_handle_axis_y_voltage_too_low = 120;  // 左手柄Y轴线电压过低
+    uint32 left_handle_roller_axis_x_voltage_too_low =
+        121;  // 左手柄滚轮X轴线电压过低
+    uint32 left_handle_roller_axis_y_voltage_too_low =
+        122;  // 左手柄滚轮Y轴线电压过低
+    uint32 left_handle_roller_axis_z_voltage_too_low =
+        123;  // 左手柄滚轮Z轴线电压过低
+    uint32 left_handle_axis_x_input_is_not_calibrated =
+        124;  // 左手柄X轴线输入没有校准
+    uint32 left_handle_axis_y_input_is_not_calibrated =
+        125;  // 左手柄Y轴线输入没有校准
+    uint32 left_handle_roller_axis_x_input_is_not_calibrated =
+        126;  // 左手柄滚轮X轴线输入没有校准
+    uint32 left_handle_roller_axis_y_input_is_not_calibrated =
+        127;  // 左手柄滚轮Y轴线输入没有校准
+    uint32 left_handle_roller_axis_z_input_is_not_calibrated =
+        128;  // 左手柄滚轮Z轴线输入没有校准
+    uint32 left_handle_axis_x_redundant_input_fault =
+        129;  // 左手柄X轴线冗余输入故障
+    uint32 left_handle_axis_y_redundant_input_fault =
+        130;  // 左手柄Y轴线冗余输入故障
+    uint32 left_handle_roller_axis_x_redundant_input_fault =
+        131;  // 左手柄滚轮X轴线冗余输入故障
+    uint32 left_handle_roller_axis_y_redundant_input_fault =
+        132;  // 左手柄滚轮Y轴线冗余输入故障
+    uint32 left_handle_roller_axis_z_redundant_input_fault =
+        133;  // 左手柄滚轮Z轴线冗余输入故障
+    uint32 right_handle_axis_x_voltage_too_high = 134;  // 右手柄X轴线电压过高
+    uint32 right_handle_axis_y_voltage_too_high = 135;  // 右手柄Y轴线电压过高
+    uint32 right_handle_roller_axis_x_voltage_too_high =
+        136;  // 右手柄滚轮X轴线电压过高
+    uint32 right_handle_roller_axis_y_voltage_too_high =
+        137;  // 右手柄滚轮Y轴线电压过高
+    uint32 right_handle_roller_axis_z_voltage_too_high =
+        138;  // 右手柄滚轮Z轴线电压过高
+    uint32 right_handle_axis_x_voltage_too_low = 139;  // 右手柄X轴线电压过低
+    uint32 right_handle_axis_y_voltage_too_low = 140;  // 右手柄Y轴线电压过低
+    uint32 right_handle_roller_axis_x_voltage_too_low =
+        141;  // 右手柄滚轮X轴线电压过低
+    uint32 right_handle_roller_axis_y_voltage_too_low =
+        142;  // 右手柄滚轮Y轴线电压过低
+    uint32 right_handle_roller_axis_z_voltage_too_low =
+        143;  // 右手柄滚轮Z轴线电压过低
+    uint32 right_handle_axis_x_input_is_not_calibrated =
+        144;  // 右手柄X轴线输入没有校准
+    uint32 right_handle_axis_y_input_is_not_calibrated =
+        145;  // 右手柄Y轴线输入没有校准
+    uint32 right_handle_roller_axis_x_input_is_not_calibrated =
+        146;  // 右手柄滚轮X轴线输入没有校准
+    uint32 right_handle_roller_axis_y_input_is_not_calibrated =
+        147;  // 右手柄滚轮Y轴线输入没有校准
+    uint32 right_handle_roller_axis_z_input_is_not_calibrated =
+        148;  // 右手柄滚轮Z轴线输入没有校准
+    uint32 right_handle_axis_x_redundant_input_fault =
+        149;  // 右手柄X轴线冗余输入故障
+    uint32 right_handle_axis_y_redundant_input_fault =
+        150;  // 右手柄Y轴线冗余输入故障
+    uint32 right_handle_roller_axis_x_redundant_input_fault =
+        151;  // 右手柄滚轮X轴线冗余输入故障
+    uint32 right_handle_roller_axis_y_redundant_input_fault =
+        152;  // 右手柄滚轮Y轴线冗余输入故障
+    uint32 right_handle_roller_axis_z_redundant_input_fault =
+        153;  // 右手柄滚轮Z轴线冗余输入故障
+
+    // 整车信息8（电控故障） ID：0X18F116D0
+    uint32 motor_controller_temperature_too_high = 154;  // 电机控制器温度偏大
+    uint32 motor_temperature_too_high            = 155;  // 电机温度偏大
+    uint32 phase_current_overload                = 156;  // 相电流过载
+    uint32 bus_current_overflows                 = 157;  // 母线电流过流
+    uint32 current_sensor_signal_exceeds_max_range =
+        158;  // 电流传感器信号超过最大范围
+    uint32 current_sensor_signal_exceeds_min_range =
+        159;  // 电流传感器信号超过最小范围
+    uint32 offset_of_current_sensor_out_of_range =
+        160;                            // 电流传感器偏移超过范围
+    uint32 bus_overvoltage      = 161;  // 母线过压
+    uint32 bus_voltage_too_high = 162;  // 母线电压偏大
+    uint32 bus_undervoltage     = 163;  // 母线欠压
+    uint32 bus_voltage_too_low  = 164;  // 母线电压偏小
+    uint32 voltage_sensor_signal_exceeds_max_range =
+        165;  // 电压传感器信号超过最大范围
+    uint32 low_voltage_power_overvoltage  = 166;  // 低压电源过压
+    uint32 low_voltage_power_undervoltage = 167;  // 低压电源欠压
+    uint32 igbt_over_temperature          = 168;  // IGBT过温
+    uint32 igbt_fault                     = 169;  // IGBT故障
+    uint32 igbt_temperature_sensor_signal_exceeds_max_range =
+        170;  // IGBT温度传感器信号超过最大范围
+    uint32 igbt_temperature_sensor_signal_exceeds_min_range =
+        171;  // IGBT温度传感器信号超过最小范围
+    uint32 motor_over_temperature             = 172;  // 电机过温
+    uint32 phase_current_hardware_overcurrent = 173;  // 相电流硬件过流
+    uint32 motor_temperature_sensor_signal_exceeds_max_range =
+        174;  // IGBT温度传感器信号超过最大范围
+    uint32 motor_temperature_sensor_signal_exceeds_min_range =
+        175;  // IGBT温度传感器信号超过最小范围
+    uint32 turn_speed_over_speed          = 176;  // 转速超速
+    uint32 turn_speed_sensor_signal_fault = 177;  // 转速传感器信号错误
+    uint32 communication_fault            = 178;  // 通讯故障
+    uint32 init_fault                     = 179;  // 初始化故障
+    uint32 stop_turn_protection           = 180;  // 堵转保护
+    uint32 high_voltage_line_disconnected = 181;  // 高压线线路断路
+    uint32 three_phase_insulation_fault   = 182;  // 三相绝缘故障
+    uint32 frequent_failure               = 183;  // 故障频繁发生
+    uint32 left_motor_controller_precharge_adhesion_fault =
+        184;  // 左电机控制器预充粘连故障
+    uint32 left_motor_controller_main_relay_adhesion_fault =
+        185;  // 左电机控制器主继电器粘连故障
+    uint32 left_motor_controller_fault_level = 186;  // 左电机控制器故障等级
+}
+
+// 装载机
+message Loader_CAN {
+    uint32 engine_intake_temperature       = 1;   // 发动机进气温度
+    uint32 engine_speed                    = 2;   // 发动机转速
+    float engine_work_time                 = 3;   // 发动机工作时间
+    float fuel_cost                        = 4;   // 燃油消耗量
+    float engine_cooling_water_temperature = 5;   // 发动机冷却水温度
+    float transmission_oil_temperature     = 6;   // 变速箱油温
+    uint32 water_in_oil_light              = 7;   // 油中有水指示灯
+    bool handbrake                         = 8;   // 手刹
+    bool power_on_signal                   = 9;   // 上电信号
+    bool fire_signal                       = 10;  // 点火信号
+    bool f_gear                            = 11;  // F档
+    bool n_gear                            = 12;  // N档
+    bool r_gear                            = 13;  // R档
+    bool turn_left_light                   = 14;  // 左转向灯
+    bool turn_right_light                  = 15;  // 右转向灯
+    float speed                            = 16;  // 车速
+    bool first_gear                        = 17;  // 1档
+    bool second_gear                       = 18;  // 2档
+    bool high_beam_light                   = 19;  // 远光灯
+    bool low_beam_light                    = 20;  // 近光灯
+    bool front_back_work_light             = 21;  // 前后工作灯
+    bool double_flash                      = 22;  // 双闪
+    float engine_oil_pressure              = 23;  // 发动机机油压力
+    float battery_voltage                  = 24;  // 蓄电池电压
+    bool steerjoy_switch3                  = 25;  // SteerJoy_Switch3
+    bool assist_work_mode                  = 26;  // 辅助铲装模式
+    bool auto_walk                         = 27;  // 自动行走
+    bool assist_working                    = 28;  // 辅助铲装中
+    float arm_angle                        = 29;  // 动臂角度
+    float bucket_angle                     = 30;  // 铲斗角度
+    float fuel_level                       = 31;  // 燃油油位
+    bool brake_pressure_alarm              = 32;  // 制动气压报警
+    bool oil_water_separation_alarm        = 33;  // 油水分离报警
+    bool engine_coolant_liquid_level_low_alarm = 34;  // 发动机冷却液液位低报警
+    bool engine_failure_alarm                  = 35;  // 发动机故障报警
+    float one_radar                            = 36;  // 1号雷达
+    float two_radar                            = 37;  // 2号雷达
+    float three_radar                          = 38;  // 3号雷达
+    float low_arm_angle_calibration     = 39;  // 低位动臂角度标定
+    float low_bucket_angle_calibration  = 40;  // 低位铲斗角度标定
+    float high_arm_angle_calibration    = 41;  // 高位动臂角度标定
+    float high_bucket_angle_calibration = 42;  // 高位铲斗角度标定
+    float engine_spn                    = 43;  // 发动机故障码-SPN
+    uint32 engine_fmi                   = 44;  // 发动机故障码-FMI
+    uint32 engine_oc                    = 45;  // 发动机故障码-OC
+    float transmission_spn              = 46;  // 变速箱故障码-SPN
+    uint32 transmission_fmi             = 47;  // 变速箱故障码-FMI
+    uint32 transmission_oc              = 48;  // 变速箱故障码-OC
+    uint32 push_weight                  = 49;  // 举升重量
+    uint32 push_num                     = 50;  // 举升次数
+    uint32 total_weight                 = 51;  // 总重
+    uint32 rated_safe_weight            = 52;  // 额定安全重量
+    uint32 percentage_of_push           = 53;  // 举重负荷百分比
+    uint32 bcd_code_year                = 54;  // BCD码年
+    uint32 bcd_code_month               = 55;  // BCD码月
+    uint32 bcd_code_day                 = 56;  // BCD码日
+    uint32 bcd_code_time                = 57;  // BCD码时
+    uint32 bcd_code_min                 = 58;  // BCD码分
+    uint32 bcd_code_second              = 59;  // BCD码秒
+    uint32 time_flag                    = 60;  // 时间标志
+    uint32 bar_cavity_ad                = 61;  // 有杆腔AD
+    uint32 no_bar_cavity_ad             = 62;  // 无杆腔AD
+    uint32 arm_angle_ad                 = 63;  // 动臂角度AD
+
+    bool hydraulic_lock_switch  = 64;  //液压锁开关
+    bool danger_flash           = 65;  //危险报警闪光灯开关
+    bool low_beam               = 66;  //近光灯开关
+    bool high_beam              = 67;  //远光灯开关
+    bool front_rear_work_lights = 68;  //前后工作灯
+    bool rotating_beacon        = 69;  //旋转报警灯开关
+    bool diagnostic_rock_switch = 70;  //摇控诊断开关
+    bool auto_switch            = 71;  // auto功能开关
+
+    IMU imu_data = 72;  // IMU回传数据
+}
+
+// 挖装机
+message BackhoeLoader_CAN {
+
+    IMU imu_data                           = 1;
+    float voltage                          = 2;   // 电源电压
+    uint32 engine_turn_speed               = 3;   // 发动机转速
+    uint32 oil_level                       = 4;   // 燃油液位
+    float speed                            = 5;   // 车速
+    float transmission_oil_temperature     = 6;   // 变速箱油温
+    bool transmission_low_pressure_warning = 7;   // 变速箱压力低报警
+    bool air_filter_warning                = 8;   // 空滤报警
+    bool hydraulic_oil_temperature_warning = 9;   // 液压油温度报警
+    bool R_signal                          = 10;  // R信号
+    bool F_signal                          = 11;  // F信号
+    bool H4_signal                         = 12;  // H4信号
+    bool H3_signal                         = 13;  // H3信号
+    bool power_on_signal                   = 14;  // 上电信号
+    bool four_wheel_drive_signal           = 15;  // 四驱信号
+    bool KD_signal                         = 16;  // KD信号
+    bool H1_signal                         = 17;  // H1信号
+    bool power_cut_off_signal              = 18;  // 动力切断信号
+    bool handbrake_status                  = 19;  // 手刹状态
+    bool differential_signal               = 20;  // 差速信号
+    uint32 Y6_printer                      = 21;  // Y6输出
+    uint32 Y5_printer                      = 22;  // Y5输出
+    uint32 differential_button_power       = 23;  // 差速按钮电源
+    uint32 differential_lock_printer       = 24;  // 差速锁输出
+    uint32 handbrake_power_printer         = 25;  // 手刹电源输出
+    uint32 Y3_printer                      = 26;  // Y3输出
+    uint32 instrument_key_panel_power      = 27;  // 仪表按键面板电源
+    uint32 excitation_printer              = 28;  // 励磁输出
+    uint32 ED1_printer                     = 29;  // ED1输出
+    uint32 power_cut_off_power_printer     = 30;  // 动力切断电源输出
+    uint32 Y1_printer                      = 31;  // Y1输出
+    uint32 instrument_normal_power         = 32;  // 仪表常电
+    uint32 four_wheel_drive_switcher_power_printer = 33;  // 四驱开关电源输出
+    uint32 Y4_printer                              = 34;  // Y4输出
+    uint32 four_wheel_drive_switcher_printer       = 35;  // 四驱阀输出
+    uint32 empty_gear_printer                      = 36;  // 空档输出
+    uint32 Y2_printer                              = 37;  // Y2输出
+    uint32 R_gear_printer                          = 38;  // R档输出
+}
+
+// 压路机
+message RoadRoller_CAN {
+  IMU imu_data = 1;                          // IMU数据
+  uint32 vibration_mode_choose = 2;             // 振动模式选择指令
+  uint32 forward_back_enabled = 3;              // 前进后退使能指令
+  uint32 forward_back = 4;                      //前进后退指令
+  float forward_back_speed = 5;              // 前进后退车速指令
+  float real_speed = 6;                      // 实际车速
+  uint32 brake = 7;                          // 刹车制动指令
+  bool flag = 8;                             // 标志位
+  uint32 accelerator = 9;                    // 油门指令
+  bool auto_driver_flag = 10;                // 无人驾驶标志位
+  bool lidar_control = 11;                   // 雷达控制
+  uint32 water_or_oil_sprinkling_function = 12; //洒水洒油功能指令
+  uint32 sprinkler_intermittent_gear = 13;      // 洒水间歇档位
+  float cur_engine_turn_speed = 14;          // 当前发动机转速
+  uint32 cur_vibration_status = 15;          // 当前振动状态
+  bool cur_brake_status = 16;                // 当前刹车制动状态
+  float oil_level_status = 17;               // 燃料油位状态
+  float cooling_water_temperature = 18;      // 冷却水温
+  float engine_oil_pressure = 19;            // 机油压力
+  float hydraulic_oil_level = 20;            // 液压油位
+  float battery_voltage = 21;                // 蓄电池电压
+}

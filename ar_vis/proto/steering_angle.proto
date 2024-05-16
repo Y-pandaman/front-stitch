@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package xcmg_proto;
+
+message steering_angle_message{
+  float steering_angle=1;
+}

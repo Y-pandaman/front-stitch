@@ -1,0 +1,13 @@
+build/
+log/
+output/
+*.engine
+*.onnx
+*.pt
+*.avi
+*.mp4
+*.log
+*.pb.cc
+*.pb.h
+*.so
+

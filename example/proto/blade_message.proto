@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package BladeController;
+
+message BladeInput{
+    int32 l_cg = 1;
+    int32 l_bd = 2;
+    int32 l_ef = 3;
+    int32 theta = 4;
+    int32 l_IJ = 5;
+    int32 l_ncnd = 6;
+}

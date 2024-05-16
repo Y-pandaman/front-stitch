@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package xcmg_proto;
+
+message blade_height{
+  float left_height=1;
+  float right_height=2;
+}
