@@ -354,39 +354,38 @@ int frontStitcherMain(int argc, char** argv) {
         // 设置额外的图像数据（来自线程交互部件），用于 CUDA 处理
         cylinder_stitcher.setExtraImageCuda(
             thread_interactive_widget.getTrackImageCudaPtr(), 1920, 1080);
-#ifdef OUTPUT_TRACK_IMAGE
-        std::filesystem::path track_image_path("./output/track_image/");
-        if (!std::filesystem::exists(track_image_path)) {
-            std::filesystem::create_directories(track_image_path);
-        }
-        track_image_path.append(std::to_string(time) + ".png");
-        cv::imwrite(track_image_path, ar_vis_image);
-#endif
 
+        // 将当前项目缝合到屏幕，并获取最终的CPU图像和掩码
         cylinder_stitcher.stitch_project_to_screen(time);
         cylinder_stitcher.getFinalImageCPU(out_image, out_mask);
 
+        // 更新时间戳，并将图像上部70像素复制到图像的下部，然后调整图像大小为640x360
         ++time;
         out_image(cv::Rect(0, 70, out_image.cols, out_image.rows - 80))
             .copyTo(out_image);
         cv::resize(out_image, out_image, cv::Size(640, 360));
+        // 发送调整后的图像
         ecal_image_sender.pubImage(out_image);
 
+        // 结束计时，计算此帧处理的时间
         timer.TimeEnd();
 
+        // 计算总时间并更新时间窗口，保持时间窗口大小不变
         time_sum += timer.TimeGap_in_ms();
         time_window.push(timer.TimeGap_in_ms());
         while (time_window.size() > window_size) {
             time_sum -= time_window.front();
             time_window.pop();
         }
+        // 计算时间窗口内的平均处理时间
         float mean_time = time_sum / time_window.size();
+        // 打印平均时间和当前窗口内帧数的信息
         printf("mean time cost: %fms in %d frames\n", mean_time, window_size);
 
+        // 打印当前帧的处理时间和总时间的信息
         printf(
             "=========================%d frame time: %f ms=========================\n",
             time, timer.TimeGap_in_ms());
-
 #ifdef TEST_YOLO
         cv::Mat result = yolo_detector.detect(out_image);
         ecal_image_sender.pubImage(result);

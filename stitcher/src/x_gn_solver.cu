@@ -158,15 +158,31 @@ void GNSolver::InitJTJ() {
     checkCudaErrors(cudaGetLastError());
 }
 
+/**
+ * 在GPU上执行矩阵预条件项的提取。
+ *
+ * @param preCondTerms 用于存储预条件项的浮点数数组。
+ * @param ia 存储矩阵稀疏表示的行索引数组。
+ * @param ja 存储矩阵稀疏表示的列索引数组。
+ * @param a 存储矩阵稀疏表示的值数组。
+ * @param rowJTJ J'TJ矩阵的行数。
+ *
+ * 此函数旨在针对大规模稀疏矩阵问题进行预处理项的并行计算，
+ * 适用于预处理技术中的求逆矩阵近似等操作。
+ */
 __global__ void ExtractPreconditioner(float* preCondTerms, int* ia, int* ja,
                                       float* a, int rowJTJ) {
+    // 根据线程索引和块索引计算当前线程处理的数据索引
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
+    // 如果当前索引超出矩阵范围，则提前退出
     if (idx >= rowJTJ) {
         return;
     }
 
+    // 遍历当前行的所有非零元素，寻找对应的预条件项
     for (int i = ia[idx]; i < ia[idx + 1]; ++i) {
+        // 如果找到当前线程负责的列，则计算其预条件项并返回
         if (idx == ja[i]) {
             preCondTerms[idx] = 1.0f / a[i];
             return;
@@ -174,20 +190,41 @@ __global__ void ExtractPreconditioner(float* preCondTerms, int* ia, int* ja,
     }
 }
 
+/**
+ * 在GPU上更新节点向量的值。
+ *
+ * @param node_vec 指向需要更新的节点向量的指针。
+ * @param node_vec_len 节点向量的长度。
+ * @param delta 指向包含更新增量的向量的指针。
+ *
+ * 此函数通过线程块和线程索引的组合来并行更新节点向量中的元素，每个元素增加对应的增量值。
+ */
 __global__ void UpdateNodesKernel(float* node_vec, int node_vec_len,
                                   float* delta) {
+    // 计算当前线程处理的节点索引
     int idx = threadIdx.x + blockDim.x * blockIdx.x;
+    // 如果索引超出节点向量长度，则提前返回
     if (idx >= node_vec_len) {
         return;
     }
 
+    // 更新节点向量中的值
     node_vec[idx] += delta[idx];
 }
 
+/**
+ * 更新节点信息
+ * 此函数用于通过调用CUDA内核函数UpdateNodesKernel来更新节点的状态。
+ * 它首先根据变量数量计算出需要的CUDA网格和块的数量，然后启动UpdateNodesKernel，
+ * 并检查CUDA执行过程中是否有错误发生。
+ */
 void GNSolver::UpdateNodes() {
+    // 计算CUDA执行网格和块的大小
     int block = 512, grid = (vars_num_ + block - 1) / block;
+    // 调用CUDA内核函数UpdateNodesKernel以更新节点
     UpdateNodesKernel<<<grid, block>>>((float*)RAW_PTR(d_node_vec_), vars_num_,
                                        RAW_PTR(d_delta_));
+    // 等待所有CUDA任务完成，并检查是否有错误
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 }

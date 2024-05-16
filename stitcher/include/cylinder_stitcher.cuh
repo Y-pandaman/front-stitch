@@ -273,22 +273,54 @@ struct CylinderGPU {
         checkCudaErrors(cudaGetLastError());
     }
 
+    /**
+     * 获取当前对象的中心点坐标。
+     *
+     * 本函数为内联函数，旨在减少函数调用开销，适用于需要频繁调用的场景。
+     * 它不接受任何参数，直接返回一个float3类型的向量，包含中心点的x、y、z坐标。
+     *
+     * @return float3 返回一个包含中心点坐标的float3向量。
+     */
     inline __device__ float3 getCenter() {
+        // 直接构造并返回中心点的float3向量
         return make_float3(center[0], center[1], center[2]);
     }
 
+    /**
+     * @brief 对给定的向量进行旋转。
+     *
+     * 该函数使用一个预定义的3x3旋转矩阵来旋转输入的3D向量。
+     *
+     * @param v 待旋转的向量，其中包含x、y、z三个分量。
+     * @return float3 旋转后的向量。
+     */
     inline __device__ float3 rotateVector(float3 v) {
-        return make_float3(
-            rotation[0] * v.x + rotation[1] * v.y + rotation[2] * v.z,
-            rotation[3] * v.x + rotation[4] * v.y + rotation[5] * v.z,
-            rotation[6] * v.x + rotation[7] * v.y + rotation[8] * v.z);
+        // 应用旋转矩阵到输入向量
+        return make_float3(rotation[0] * v.x + rotation[1] * v.y +
+                               rotation[2] * v.z,   // 计算旋转后的x分量
+                           rotation[3] * v.x + rotation[4] * v.y +
+                               rotation[5] * v.z,   // 计算旋转后的y分量
+                           rotation[6] * v.x + rotation[7] * v.y +
+                               rotation[8] * v.z);   // 计算旋转后的z分量
     }
 
+    /**
+     * @brief 对给定的向量进行逆向旋转。
+     *
+     * 该函数通过一个预定义的旋转矩阵（全局变量rotation）来实现对输入向量的逆向旋转操作。
+     * 注意：该函数设计为在CUDA设备端运行，适用于GPU加速计算。
+     *
+     * @param v 输入的待旋转向量，是一个3维向量（float3类型）。
+     * @return float3 返回旋转后的向量。
+     */
     inline __device__ float3 rotateVector_inv(float3 v) {
-        return make_float3(
-            rotation[0] * v.x + rotation[3] * v.y + rotation[6] * v.z,
-            rotation[1] * v.x + rotation[4] * v.y + rotation[7] * v.z,
-            rotation[2] * v.x + rotation[5] * v.y + rotation[8] * v.z);
+        // 应用旋转矩阵进行逆向旋转计算
+        return make_float3(rotation[0] * v.x + rotation[3] * v.y +
+                               rotation[6] * v.z,   // 计算旋转后的x分量
+                           rotation[1] * v.x + rotation[4] * v.y +
+                               rotation[7] * v.z,   // 计算旋转后的y分量
+                           rotation[2] * v.x + rotation[5] * v.y +
+                               rotation[8] * v.z);   // 计算旋转后的z分量
     }
 
     /**
@@ -468,12 +500,36 @@ struct CylinderImageGPU {
         return true;
     }
 
+    /**
+     * @brief 获取指定位置的掩码值
+     *
+     * 该函数用于从掩码数组中根据给定的坐标获取对应的掩码值。如果坐标超出掩码数组的范围，则返回0。
+     *
+     * @param x 指定位置的x坐标
+     * @param y 指定位置的y坐标
+     * @return uchar 返回指定位置的掩码值。如果坐标超出掩码数组的范围，则返回0。
+     */
     inline __device__ uchar getMaskValue(int x, int y) {
+        // 检查坐标是否在掩码数组的有效范围内
         if (x < 0 || y < 0 || x >= width || y >= height)
             return 0;
+        // 返回指定位置的掩码值
         return mask[y * width + x];
     }
+
+    /**
+     * @brief 获取图像中指定坐标的像素值
+     *
+     * 该函数用于从图像中根据给定的x和y坐标获取对应的像素值。如果坐标超出图像范围，
+     * 则返回一个全为0的像素值（黑像素）。
+     *
+     * @param x 图像中的x坐标
+     * @param y 图像中的y坐标
+     * @return uchar3
+     * 像素值，以uchar3类型返回，分别代表红、绿、蓝三个颜色通道的值
+     */
     inline __device__ uchar3 getImageValue(int x, int y) {
+        // 检查坐标是否在图像范围内，若不在则返回黑色像素
         if (x < 0 || y < 0 || x >= width || y >= height)
             return make_uchar3(0, 0, 0);
         return image[y * width + x];

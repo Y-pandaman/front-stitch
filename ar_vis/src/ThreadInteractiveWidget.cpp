@@ -264,6 +264,15 @@ bool ThreadInteractiveWidget::startMainWorkerThread(int argc, char** argv) {
     return true;
 }
 
+/**
+ * 获取跟踪图像的CUDA指针
+ * 
+ * 该函数是一个成员函数，属于ThreadInteractiveWidget类。它通过调用widget_ptr成员变量的
+ * getTrackFBCudaPtr()函数来获取一个指向跟踪图像帧的CUDA内存指针。这个功能通常用于在CUDA
+ * 环境中对跟踪图像进行处理。
+ * 
+ * @return 返回一个float类型的指针，该指针指向CUDA内存中的跟踪图像数据。
+ */
 float* ThreadInteractiveWidget::getTrackImageCudaPtr() {
-    return widget_ptr->getTrackFBCudaPtr();
+    return widget_ptr->getTrackFBCudaPtr(); // 从widget_ptr中获取跟踪图像的CUDA指针
 }

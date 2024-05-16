@@ -119,39 +119,74 @@ __global__ void ConvertRGBAF2RGBU(float* img_rgba, uchar3* img_rgb, int width,
     img_rgb[pixel_idx].z = img_rgba[src_pixel_idx + 2] * 255;
 }
 
+/**
+ * @brief 将RGBA浮点数图像转换为RGBA无符号字符图像。
+ *
+ * 此函数在CUDA的并行计算模型下运行，将源图像（以浮点数形式的RGBA格式存储）转换为目标图像（以无符号字符四元数RGBA格式存储）。
+ * 主要进行颜色空间的转换，并同时处理图像的翻转（垂直翻转）。
+ *
+ * @param src_img_rgba 指向源图像（RGBA浮点数格式）数据的指针。
+ * @param tgt_img_rgba 指向目标图像（RGBA无符号字符四元数格式）数据的指针。
+ * @param width 图像的宽度。
+ * @param height 图像的高度。
+ */
 __global__ void ConvertRGBAF2RGBAU(float* src_img_rgba, uchar4* tgt_img_rgba,
                                    int width, int height) {
+    // 根据线程索引计算当前处理的像素索引
     int pixel_idx = blockDim.x * blockIdx.x + threadIdx.x;
 
+    // 计算处理所有像素的最大索引值
     int max_idx = height * width;
+    // 如果当前像素索引超出图像范围，则返回
     if (pixel_idx >= max_idx)
         return;
 
+    // 计算目标图像中的行和列索引
     int dst_row = pixel_idx / width, dst_col = pixel_idx % width;
+    // 计算源图像中的行和列索引，实现图像的垂直翻转
     int src_row = height - dst_row - 1, src_col = dst_col;
-    int src_pixel_idx         = (src_row * width + src_col) * 4;
+    // 根据源图像的行、列索引计算像素在源图像中的索引
+    int src_pixel_idx = (src_row * width + src_col) * 4;
+    // 将源图像的RGBA值转换并赋值给目标图像，同时进行归一化到[0, 255]
     tgt_img_rgba[pixel_idx].x = src_img_rgba[src_pixel_idx] * 255;
     tgt_img_rgba[pixel_idx].y = src_img_rgba[src_pixel_idx + 1] * 255;
     tgt_img_rgba[pixel_idx].z = src_img_rgba[src_pixel_idx + 2] * 255;
     tgt_img_rgba[pixel_idx].w = src_img_rgba[src_pixel_idx + 3] * 255;
 }
 
+/**
+ * 将额外的图像数据设置到GPU上，用于后续的处理。
+ *
+ * @param image_cuda 指向GPU上存放的额外图像数据的指针。
+ * @param width 图像的宽度。
+ * @param height 图像的高度。
+ *
+ * 此函数首先更新额外视图的尺寸信息，然后将传入的RGBA浮点图像转换为RGBA无符号字符图像，
+ * 存储到类成员变量d_buffer_4channels_中，供其他GPU方法使用。
+ */
 void CylinderStitcherGPU::setExtraImageCuda(float* image_cuda, int width,
                                             int height) {
+    // 更新额外视图的尺寸信息，mask设为nullptr
     extra_view_.width  = width;
     extra_view_.height = height;
     extra_view_.mask   = nullptr;
 
+    // 计算CUDA kernel调用的网格和块大小
     int block = 128, grid = (height * width + block - 1) / block;
 
+    // 确保之前的操作已经完成
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 
+    // 将RGBA浮点图像转换为RGBA无符号字符图像
     ConvertRGBAF2RGBAU<<<grid, block>>>(
         image_cuda, (uchar4*)d_buffer_4channels_, width, height);
+
+    // 确保kernel调用和后续操作完成
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 
+    // 更新额外视图的图像指针
     extra_view_.image = (uchar4*)d_buffer_4channels_;
 }
 
@@ -319,7 +354,7 @@ void CylinderStitcherGPU::setExtraViewCamera(float4 intrin,
  * 对左右两个图像进行对齐操作。
  * 此函数首先设置图像对齐器的源图像和目标图像，然后执行图像对齐，
  * 最后对源图像进行变形，使其与目标图像对齐。
- * 
+ *
  * @param time 一个用于控制迭代次数的参数。如果时间为0，迭代次数为30；否则为4。
  */
 void CylinderStitcherGPU::alignImages(int time) {
@@ -353,29 +388,43 @@ void CylinderStitcherGPU::alignImages(int time) {
         cyl_images_[2].mask, cyl_images_[2].height, cyl_images_[2].width);
 }
 
+/**
+ * 在CylinderStitcherGPU类中，查找并计算图像的接缝。
+ * 该方法首先检查seam_masks_是否为空，如果为空，则初始化seam_masks_，
+ * 并为左右两条线分配CUDA内存。之后，调用SeamFind_cuda函数来查找接缝。
+ * 如果seam_masks_不为空，则只调用SeamFind_cuda函数进行接缝查找，不进行初始化。
+ */
 void CylinderStitcherGPU::findSeam() {
+    // 当seam_masks_为空时，初始化seam_masks_并为每条线分配内存
     if (seam_masks_.size() == 0) {
-        separate_lines_.resize(2);
+        separate_lines_.resize(2);   // 初始化分离线数组
 
-        int width  = cyl_images_[1].width;
-        int height = cyl_images_[1].height;
+        int width  = cyl_images_[1].width;    // 获取图像宽度
+        int height = cyl_images_[1].height;   // 获取图像高度
 
-        int interval = width / 3;
+        int interval = width / 3;   // 计算分离线之间的间隔
+        // 为每行添加分离线位置
         for (int i = 0; i < height; i++) {
             separate_lines_[0].emplace_back(interval);
             separate_lines_[1].emplace_back(2 * interval);
         }
+
+        // 分配CUDA内存以存储接缝掩码
         uchar *seam_mask_left, *seam_mask_mid, *seam_mask_right;
         cudaMalloc((void**)&seam_mask_left, sizeof(uchar) * height * width);
         cudaMalloc((void**)&seam_mask_mid, sizeof(uchar) * height * width);
         cudaMalloc((void**)&seam_mask_right, sizeof(uchar) * height * width);
+
+        // 将接缝掩码指针添加到seam_masks_中
         seam_masks_.emplace_back(seam_mask_left);
         seam_masks_.emplace_back(seam_mask_mid);
         seam_masks_.emplace_back(seam_mask_right);
 
+        // 调用CUDA函数进行接缝查找
         SeamFind_cuda(cyl_images_, cyl_images_[1].height, cyl_images_[1].width,
                       separate_lines_, 150, seam_masks_, true);
     } else {
+        // 如果seam_masks_不为空，则只进行接缝查找
         SeamFind_cuda(cyl_images_, cyl_images_[1].height, cyl_images_[1].width,
                       separate_lines_, 20, seam_masks_, false);
     }
@@ -741,7 +790,7 @@ void CylinderStitcherGPU::stitch_project_to_cyn(int time) {
 /**
  * 在CylinderStitcherGPU类中，执行图像对齐、寻找接缝和多带融合的步骤来缝合图像。
  * 此函数主要用于处理GPU上的图像缝合流程，包含对齐图像、查找接缝和应用融合。
- * 
+ *
  * @param time 用于指定要处理的时间戳或帧数。
  */
 void CylinderStitcherGPU::stitch_align_seam_blend(int time) {
@@ -767,16 +816,25 @@ void CylinderStitcherGPU::stitch_align_seam_blend(int time) {
     checkCudaErrors(cudaGetLastError());
 }
 
+/**
+ * 将额外视图投影到圆柱图像并渲染到屏幕上
+ *
+ * @param time 当前时间戳，用于可能的时间依赖处理，但本函数体未直接使用此参数
+ */
 void CylinderStitcherGPU::stitch_project_to_screen(int time) {
+    // 将额外视图转换为圆柱图像
     proj4ChannelsExtraViewToCylinderImage_cuda(extra_view_, extra_cyl_image_,
                                                *cyl_, cyl_image_width_,
                                                cyl_image_height_);
+    // 将额外的圆柱图像与之前的圆柱图像融合
     BlendExtraViewToScreen4Channels_cuda(
         cyl_images_[1].image, extra_cyl_image_.image, cyl_images_[1].width,
         cyl_images_[1].height, 1.0);
+    // 将融合后的圆柱图像渲染到屏幕上
     RenderToScreen_cuda(novel_view_intrins_, novel_view_extrin_Rs_,
                         cyl_images_[1], novel_images_, *cyl_, novel_view_pos_,
                         novel_images_num_);
+    // 确保所有CUDA操作完成，检查错误
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 }
@@ -852,22 +910,30 @@ void CylinderStitcherGPU::getCylinderImageCPU(cv::Mat& image, cv::Mat& mask) {
                                cudaMemcpyDeviceToHost));
 }
 
+/**
+ * 该函数用于在CPU上获取最终图像和掩码。
+ * 它通过将多个分块图像从GPU内存复制到CPU内存，并将它们拼接成一个最终图像。
+ *
+ * @param image 引用，用于存储最终的图像。
+ * @param mask 引用，用于存储与最终图像对应的掩码。
+ */
 void CylinderStitcherGPU::getFinalImageCPU(cv::Mat& image, cv::Mat& mask) {
+    // 计算每个新图像块的宽度和总高度
     int width  = cyl_images_[1].width / novel_images_num_;
     int height = cyl_images_[1].height;
 
+    // 初始化最终图像和掩码为全零
     image = cv::Mat::zeros(height, cyl_images_[1].width, CV_8UC3);
     mask  = cv::Mat::zeros(height, cyl_images_[1].width, CV_8UC1);
 
+    // 遍历所有新图像块，将它们从GPU内存复制到CPU内存，并拼接到最终图像上
     for (int i = 0; i < novel_images_num_; ++i) {
         cv::Mat temp_image = cv::Mat::zeros(height, width, CV_8UC3);
+        // 从GPU设备内存复制图像数据到CPU主机内存
         checkCudaErrors(cudaMemcpy(temp_image.data, novel_images_[i],
                                    width * height * sizeof(uchar3),
                                    cudaMemcpyDeviceToHost));
+        // 将复制的图像块粘贴到最终图像的相应位置
         temp_image.copyTo(image(cv::Rect(i * width, 0, width, height)));
-#if 0
-        cv::imshow("temp_image", temp_image);
-        cv::waitKey(0);
-#endif
     }
 }

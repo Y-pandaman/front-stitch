@@ -713,8 +713,16 @@ void InteractiveImageWidget::setBladeCurrentPose(float l_CG, float l_BD,
         l_CG, l_BD, l_EF, theta, l_IJ, l_LM);
 }
 
+/**
+ * 获取跟踪帧缓冲区在CUDA中的指针
+ * 
+ * 本函数用于获取当前对象中存储的跟踪帧缓冲区（frame buffer）对应的CUDA内存指针。
+ * 这个指针可以用于在CUDA计算环境中直接访问和操作该帧缓冲区的数据。
+ * 
+ * @return 返回一个float类型的指针，指向在CUDA设备内存中的跟踪帧缓冲区数据。
+ */
 float* InteractiveImageWidget::getTrackFBCudaPtr() {
-    return fb_track_->getCudaPtr();
+    return fb_track_->getCudaPtr(); // 从fb_track_对象中获取CUDA内存指针
 }
 
 /**

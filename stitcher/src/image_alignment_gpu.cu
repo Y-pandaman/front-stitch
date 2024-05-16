@@ -252,29 +252,49 @@ __global__ void WarpSrcImgKernel(cv::cuda::PtrStep<float> warped_src_img,
     warped_src_img.ptr(row)[col] = src_rgb;
 }
 
+/**
+ * @brief 根据给定的参数，使用卷积的方式将源图像及其掩码映射到一个新的图像及其掩码上。
+ * 
+ * @param warped_src_img 映射后的源图像，为 uchar3 类型数组，其中包含 RGB 三通道颜色信息。
+ * @param warped_src_mask 映射后的源图像掩码，为 uchar 类型数组，用于标识像素是否有效。
+ * @param src_img 源图像，为 uchar3 类型数组，其中包含 RGB 三通道颜色信息。
+ * @param src_mask 源图像掩码，为 uchar 类型数组，用于标识像素是否有效。
+ * @param pixel_num 图像中像素的数量。
+ * @param img_rows 图像的行数。
+ * @param img_cols 图像的列数。
+ * @param node_vec 包含节点信息的浮点型数组。
+ * @param pixel_rela_idx_vec 包含像素相对索引的整型数组。
+ * @param pixel_rela_weight_vec 包含像素相对权重的浮点型数组。
+ */
 __global__ void WarpSrcImgKernel(uchar3* warped_src_img, uchar* warped_src_mask,
                                  uchar3* src_img, uchar* src_mask,
                                  int pixel_num, int img_rows, int img_cols,
                                  float2* node_vec, int* pixel_rela_idx_vec,
                                  float* pixel_rela_weight_vec) {
+    // 计算当前处理的像素索引
     int pixel_idx = threadIdx.x + blockDim.x * blockIdx.x;
+    // 如果索引超出图像范围，则返回
     if (pixel_idx >= pixel_num) {
         return;
     }
 
+    // 根据索引计算像素的行列位置
     int row = pixel_idx / img_cols;
     int col = pixel_idx % img_cols;
+    // 计算四个角落像素在数组中的索引
     int tl  = 4 * pixel_idx;
     int tr  = 4 * pixel_idx + 1;
     int bl  = 4 * pixel_idx + 2;
     int br  = 4 * pixel_idx + 3;
 
+    // 根据权重和节点信息计算当前像素的映射位置
     float2 warped_pixel =
         pixel_rela_weight_vec[tl] * node_vec[pixel_rela_idx_vec[tl]] +
         pixel_rela_weight_vec[tr] * node_vec[pixel_rela_idx_vec[tr]] +
         pixel_rela_weight_vec[bl] * node_vec[pixel_rela_idx_vec[bl]] +
         pixel_rela_weight_vec[br] * node_vec[pixel_rela_idx_vec[br]];
 
+    // 计算映射后像素的四个相邻像素索引
     int x_0          = (int)warped_pixel.x;
     int y_0          = (int)warped_pixel.y;
     int x_1          = x_0 + 1;
@@ -284,34 +304,43 @@ __global__ void WarpSrcImgKernel(uchar3* warped_src_img, uchar* warped_src_mask,
     int pixel_idx_01 = y_1 * img_cols + x_0;
     int pixel_idx_11 = y_1 * img_cols + x_1;
 
+    // 检查映射后的像素是否在图像范围内
     if (x_0 < 0 || y_0 < 0 || x_1 >= img_cols || y_1 >= img_rows) {
+        // 如果不在范围内，则将像素设置为黑色，掩码设置为0
         warped_src_img[pixel_idx]  = make_uchar3(0, 0, 0);
         warped_src_mask[pixel_idx] = 0;
         return;
     }
 
+    // 检查四个相邻像素是否都有效
     if (src_mask[pixel_idx_00] > 128 && src_mask[pixel_idx_10] > 128 &&
         src_mask[pixel_idx_01] > 128 && src_mask[pixel_idx_11] > 128) {
+        // 如果都有效，则设置掩码为255
         warped_src_mask[pixel_idx] = 255;
 
+        // 计算插值权重
         float coef_x_0 = x_1 - warped_pixel.x;
         float coef_y_0 = y_1 - warped_pixel.y;
         float coef_00  = coef_x_0 * coef_y_0;
         float coef_10  = (1 - coef_x_0) * coef_y_0;
         float coef_01  = coef_x_0 * (1 - coef_y_0);
         float coef_11  = (1 - coef_x_0) * (1 - coef_y_0);
+        // 获取四个相邻像素的颜色值
         uchar3 val_00  = src_img[pixel_idx_00];
         uchar3 val_10  = src_img[pixel_idx_10];
         uchar3 val_01  = src_img[pixel_idx_01];
         uchar3 val_11  = src_img[pixel_idx_11];
+        // 使用插值计算当前像素的颜色
         float3 rgb =
             coef_00 * make_float3((int)val_00.x, (int)val_00.y, (int)val_00.z) +
             coef_01 * make_float3((int)val_01.x, (int)val_01.y, (int)val_01.z) +
             coef_10 * make_float3((int)val_10.x, (int)val_10.y, (int)val_10.z) +
             coef_11 * make_float3((int)val_11.x, (int)val_11.y, (int)val_11.z);
+        // 设置当前像素的颜色
         warped_src_img[pixel_idx] =
             make_uchar3((int)rgb.x, (int)rgb.y, (int)rgb.z);
     } else {
+        // 如果不都有效，则将像素设置为黑色，掩码设置为0
         warped_src_img[pixel_idx]  = make_uchar3(0, 0, 0);
         warped_src_mask[pixel_idx] = 0;
     }
@@ -466,16 +495,35 @@ void ImageAlignmentCUDA::SetSrcTargetImgsFromDevice(
                      make_int2(0, 0), make_int2(0, 0));
 }
 
+/**
+ * 在CUDA上执行图像变形操作，将源图像按照指定的映射关系变形。
+ *
+ * @param d_warped_src_img 指向变形后图像数据的指针（ uchar3
+ * 类型，包含RGB三个通道）。
+ * @param d_warped_src_mask 指向变形后图像掩码数据的指针（ uchar
+ * 类型，1个通道）。
+ * @param d_src_img 指向源图像数据的指针（ uchar3 类型，包含RGB三个通道）。
+ * @param d_src_mask 指向源图像掩码数据的指针（ uchar 类型，1个通道）。
+ * @param src_rows 源图像的行数。
+ * @param src_cols 源图像的列数。
+ *
+ * 函数首先检查是否已经分配了图像缓冲区，如果没有，则分配足够的内存以存储源图像和掩码。
+ * 接着，将源图像和掩码数据从设备内存拷贝到分配的缓冲区中。然后，通过调用 CUDA
+ * 核函数 WarpSrcImgKernel 对源图像进行变形处理，将结果存储到 d_warped_src_img
+ * 和 d_warped_src_mask 指向的设备内存中。
+ */
 void ImageAlignmentCUDA::WarpSrcImg(uchar3* d_warped_src_img,
                                     uchar* d_warped_src_mask, uchar3* d_src_img,
                                     uchar* d_src_mask, int src_rows,
                                     int src_cols) {
+    // 检查图像缓冲区是否已分配，若未分配则进行分配
     if (image_buffer_ == nullptr) {
         checkCudaErrors(
             cudaMalloc(&image_buffer_, src_rows * src_cols * sizeof(uchar3)));
         checkCudaErrors(
             cudaMalloc(&mask_buffer_, src_rows * src_cols * sizeof(uchar)));
     }
+    // 将源图像和掩码数据从设备内存拷贝到缓冲区
     checkCudaErrors(cudaMemcpy(image_buffer_, d_src_img,
                                src_rows * src_cols * sizeof(uchar3),
                                cudaMemcpyDeviceToDevice));
@@ -483,15 +531,18 @@ void ImageAlignmentCUDA::WarpSrcImg(uchar3* d_warped_src_img,
                                src_rows * src_cols * sizeof(uchar),
                                cudaMemcpyDeviceToDevice));
 
-    /** backward mapping */
+    /** 进行图像的反向映射 */
     int pixel_num = img_rows_ * img_cols_;
     d_warped_src_gray_img_.create(img_rows_, img_cols_, CV_32FC1);
+    // 计算执行kernel的网格和块的大小
     int block = 128, grid = (pixel_num + block - 1) / block;
 
+    // 调用CUDA核函数进行图像变形
     WarpSrcImgKernel<<<grid, block>>>(
         d_warped_src_img, d_warped_src_mask, image_buffer_, mask_buffer_,
         pixel_num, img_rows_, img_cols_, RAW_PTR(d_node_vec_),
         RAW_PTR(d_pixel_rela_idx_vec_), RAW_PTR(d_pixel_rela_weight_vec_));
+    // 等待所有CUDA任务完成，并检查是否有错误发生
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 }

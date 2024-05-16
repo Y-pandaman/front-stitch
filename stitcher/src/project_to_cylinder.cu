@@ -5,7 +5,7 @@
 /**
  * 一维插值函数
  * 该函数用于在两个给定的 uchar3 值之间进行线性插值，返回一个新的 uchar3 值。
- * 
+ *
  * @param v1 第一个 uchar3 插值点
  * @param v2 第二个 uchar3 插值点
  * @param x 插值系数，x 在 0.0f 到 1.0f 之间，表示从 v1 向 v2 的插值比例
@@ -19,19 +19,44 @@ static inline __device__ __host__ uchar3 interpolate1D(uchar3 v1, uchar3 v2,
                        (uchar)((float)v1.z * (1.0f - x) + (float)v2.z * x));
 }
 
+/**
+ * 一维插值函数，用于在两个 uchar4 值之间进行线性插值。
+ *
+ * @param v1 第一个 uchar4 输入值，作为插值的起点。
+ * @param v2 第二个 uchar4 输入值，作为插值的终点。
+ * @param x 插值系数，取值范围为 [0.0, 1.0]，其中 0.0 表示完全使用 v1 的值，1.0
+ * 表示完全使用 v2 的值。
+ * @return 返回一个 uchar4 类型的插值结果，其中每个通道都进行了线性插值计算。
+ */
 static inline __device__ __host__ uchar4 interpolate1D4Channels(uchar4 v1,
                                                                 uchar4 v2,
                                                                 float x) {
+    // 对每个颜色通道执行线性插值计算，并将结果转换为 uchar 类型
     return make_uchar4((uchar)((float)v1.x * (1.0f - x) + (float)v2.x * x),
                        (uchar)((float)v1.y * (1.0f - x) + (float)v2.y * x),
                        (uchar)((float)v1.z * (1.0f - x) + (float)v2.z * x),
                        (uchar)((float)v1.w * (1.0f - x) + (float)v2.w * x));
 }
 
+/**
+ * 对四个二维采样点进行插值，返回插值后的颜色值。
+ * 该函数首先在x方向对给定的四个采样点进行一次插值，然后在y方向对插值结果再次进行插值。
+ *
+ * @param v1 采样点1的颜色值。
+ * @param v2 采样点2的颜色值。
+ * @param v3 采样点3的颜色值。
+ * @param v4 采样点4的颜色值。
+ * @param x  在x方向上的插值系数。
+ * @param y  在y方向上的插值系数。
+ * @return 插值后的颜色值，以uchar4类型返回。
+ */
 static inline __device__ __host__ uchar4 interpolate2D4Channels(
     uchar4 v1, uchar4 v2, uchar4 v3, uchar4 v4, float x, float y) {
+    // 在x方向上对v1和v2进行插值，得到中间颜色值s
     uchar4 s = interpolate1D4Channels(v1, v2, x);
+    // 在x方向上对v3和v4进行插值，得到中间颜色值t
     uchar4 t = interpolate1D4Channels(v3, v4, x);
+    // 在y方向上对中间颜色值s和t进行插值，得到最终的插值颜色值
     return interpolate1D4Channels(s, t, y);
 }
 
@@ -59,20 +84,34 @@ static inline __device__ __host__ uchar3 interpolate2D(uchar3 v1, uchar3 v2,
     return interpolate1D(s, t, y);
 }
 
+/**
+ * 在给定的图像中，通过双线性插值计算指定像素点的颜色。
+ *
+ * @param src 指向图像数据的指针，图像数据以uchar4（RGBA）格式存储。
+ * @param h 图像的高度。
+ * @param w 图像的宽度。
+ * @param pixel 指定的像素点坐标，为浮点型，以便支持亚像素精度。
+ * @return 计算得到的指定像素点的颜色，以uchar4（RGBA）格式返回。
+ */
 static inline __device__ uchar4 Bilinear4Channels(uchar4* src, int h, int w,
                                                   float2 pixel) {
-    int x0  = (int)pixel.x;
-    int y0  = (int)pixel.y;
-    int x1  = x0 + 1;
-    int y1  = y0 + 1;
+    // 将像素坐标向下取整得到x0和y0
+    int x0 = (int)pixel.x;
+    int y0 = (int)pixel.y;
+    // 计算相邻的像素点坐标x1和y1
+    int x1 = x0 + 1;
+    int y1 = y0 + 1;
+    // 计算像素点在x和y方向上的偏差
     float x = pixel.x - x0;
     float y = pixel.y - y0;
 
+    // 根据坐标计算像素在图像数组中的索引
     int idx00 = x0 + y0 * w;
-    int idx01 = idx00 + w;
-    int idx10 = idx00 + 1;
-    int idx11 = idx01 + 1;
+    int idx01 = idx00 + w;   // 同一行下一个像素的索引
+    int idx10 = idx00 + 1;   // 下一行同一个列的像素索引
+    int idx11 = idx01 + 1;   // 下一行下一个列的像素索引
 
+    // 使用双线性插值计算指定像素的颜色
     return interpolate2D4Channels(src[idx00], src[idx10], src[idx01],
                                   src[idx11], x, y);
 }
@@ -108,29 +147,60 @@ static inline __device__ uchar3 Bilinear(uchar3* src, int h, int w,
     return interpolate2D(src[idx00], src[idx10], src[idx01], src[idx11], x, y);
 }
 
+/**
+ * 在CUDA设备上执行的BackProjToSrc4Channels_kernel函数。
+ * 该函数用于将图像从圆柱坐标系重新投影回源图像坐标系。
+ *
+ * @param src_color 源图像的彩色数据，类型为uchar4。
+ * @param mask 源图像的掩码，如果不需要则可以为nullptr。
+ * @param src_h 源图像的高度。
+ * @param src_w 源图像的宽度。
+ * @param cyl 圆柱模型的参数。
+ * @param cam 镜头模型的参数。
+ * @param cyl_image 投影回圆柱坐标系后的图像数据。
+ * @param cyl_mask 圆柱坐标系图像的掩码，如果不需要则可以为nullptr。
+ * @param uv 用于存储第一个像素的UV坐标。
+ * @param global_min_theta 全局最小的theta值。
+ * @param global_min_phi 全局最小的phi值。
+ * @param global_max_theta 全局最大的theta值。
+ * @param global_max_phi 全局最大的phi值。
+ * @param min_theta 当前块处理的最小theta值。
+ * @param min_phi 当前块处理的最小phi值。
+ * @param height 投影图像的高度。
+ * @param width 投影图像的宽度。
+ * @param is_fisheye 是否使用鱼眼镜头模型。
+ *
+ * 注：该函数不返回任何值，通过指针参数直接修改数据。
+ */
 static __global__ void BackProjToSrc4Channels_kernel(
     uchar4* src_color, uchar* mask, int src_h, int src_w, CylinderGPU cyl,
     PinholeCameraGPU cam, uchar4* cyl_image, uchar* cyl_mask, int* uv,
     float* global_min_theta, float* global_min_phi, float* global_max_theta,
     float* global_max_phi, float* min_theta, float* min_phi, int height,
     int width, bool is_fisheye) {
+    // 计算线程索引和总线程数
     int pixelIdx     = threadIdx.x + blockIdx.x * blockDim.x;
     int total_thread = blockDim.x * gridDim.x;
     int totalPixel   = height * width;
 
+    // 计算theta和phi的步长
     float step_x = ((*global_max_theta) - (*global_min_theta)) / width;
     float step_y = ((*global_max_phi) - (*global_min_phi)) / height;
 
+    // 遍历所有像素
     while (pixelIdx < totalPixel) {
         int x = pixelIdx % width;
         int y = pixelIdx / width;
 
+        // 计算当前像素对应的theta和phi值
         float theta = x * step_x + *min_theta;
         float phi   = y * step_y + *min_phi;
 
+        // 根据theta和phi计算世界坐标
         float3 P =
             make_float3(cyl.r * sinf(theta), cyl.r * phi, cyl.r * cosf(theta));
 
+        // 将世界坐标投影回像素坐标
         float2 pixel;
         if (is_fisheye) {
             pixel = cam.projWorldToPixelFishEye(cyl.rotateVector_inv(P) +
@@ -140,15 +210,19 @@ static __global__ void BackProjToSrc4Channels_kernel(
                 cam.projWorldToPixel(cyl.rotateVector_inv(P) + cyl.getCenter());
         }
 
+        // 初始化颜色和掩码值
         uchar4 color = make_uchar4(0, 0, 0, 0);
         uchar m      = 0;
 
+        // 无掩码时处理像素
         if (mask == nullptr) {
+            // 使用双线性插值获取源图像颜色
             if (pixel.x >= 0 && pixel.y >= 0 && pixel.x < src_w - 1 &&
                 pixel.y < src_h - 1) {
                 color = Bilinear4Channels(src_color, src_h, src_w, pixel);
             }
 
+            // 计算在圆柱图像中的位置
             int row = (phi - (*global_min_phi)) / step_y + 0.5;
             int col = (theta - (*global_min_theta)) / step_x + 0.5;
             if (x == 0 && y == 0) {
@@ -156,16 +230,19 @@ static __global__ void BackProjToSrc4Channels_kernel(
                 uv[1] = 0;
             }
 
+            // 更新圆柱图像数据
             if (row >= 0 && row < height && col >= 0 && col < width) {
                 cyl_image[row * width + col] = color;
             }
-        } else {
+        } else {   // 有掩码时处理像素
+            // 使用双线性插值获取源图像颜色和掩码值
             if (pixel.x >= 0 && pixel.y >= 0 && pixel.x < src_w - 1 &&
                 pixel.y < src_h - 1) {
                 color = Bilinear4Channels(src_color, src_h, src_w, pixel);
                 m = mask[(int)(pixel.y + 0.5f) * src_w + (int)(pixel.x + 0.5f)];
             }
 
+            // 计算在圆柱图像中的位置
             int row = (phi - (*global_min_phi)) / step_y + 0.5;
             int col = (theta - (*global_min_theta)) / step_x + 0.5;
             if (x == 0 && y == 0) {
@@ -173,12 +250,14 @@ static __global__ void BackProjToSrc4Channels_kernel(
                 uv[1] = 0;
             }
 
+            // 更新圆柱图像数据和掩码
             if (row >= 0 && row < height && col >= 0 && col < width) {
                 cyl_image[row * width + col] = color;
                 cyl_mask[row * width + col]  = m;
             }
         }
 
+        // 移动到下一个像素
         pixelIdx += total_thread;
     }
 }
@@ -429,18 +508,31 @@ static __global__ void GetBoundingBox_kernel_v2(float* theta, float* phi,
     }
 }
 
+/**
+ * 将四个通道的额外视图投影到圆柱图像
+ *
+ * @param extra_view 四个通道的额外视图，包含图像数据、掩码和视图尺寸等信息
+ * @param extra_cyl_image 投影后的圆柱形图像，包含图像数据、掩码和UV坐标等信息
+ * @param cylinder 圆柱体的参数和属性，如全局的theta和phi角等
+ * @param cyl_image_width 圆柱图像的宽度
+ * @param cyl_image_height 圆柱图像的高度
+ * @return 总是返回true，表示函数执行成功
+ */
 bool proj4ChannelsExtraViewToCylinderImage_cuda(
     ViewGPU4Channels extra_view, CylinderImageGPU4Channels& extra_cyl_image,
     CylinderGPU& cylinder, int cyl_image_width, int cyl_image_height) {
-#if 1
+    // 获取额外视图的高度和宽度，计算圆柱图像中通道的总数
     int height = extra_view.height, width = extra_view.width;
     int size_c = cylinder.offset[3];
 
+    // 设置CUDA线程块和块的数量
     int num_thread = 512;
     int num_block  = min(65535, (size_c + num_thread - 1) / num_thread);
     int num_block2 =
         min(65535,
             (cyl_image_width * cyl_image_height + num_thread - 1) / num_thread);
+
+    // 执行CUDA内核函数BackProjToSrc4Channels_kernel，将额外视图投影到圆柱图像
 #if 1
     BackProjToSrc4Channels_kernel<<<num_block2, num_thread>>>(
         extra_view.image, extra_view.mask, extra_view.height, extra_view.width,
@@ -450,12 +542,11 @@ bool proj4ChannelsExtraViewToCylinderImage_cuda(
         cylinder.global_theta, cylinder.global_phi, cyl_image_height,
         cyl_image_width, false);
 
+    // 检查CUDA执行是否出错
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 #endif
     return true;
-
-#endif
 }
 
 bool projExtraViewToCylinderImage_cuda(ViewGPU extra_view,
