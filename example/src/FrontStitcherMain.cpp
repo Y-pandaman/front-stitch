@@ -22,7 +22,7 @@
 #include "yolo_detect.h"
 #endif
 
-#define USE_VIDEO_INPUT
+// #define USE_VIDEO_INPUT
 
 int frontStitcherMain(int argc, char** argv) {
 #ifdef TEST_YOLO
@@ -75,54 +75,66 @@ int frontStitcherMain(int argc, char** argv) {
         K_mat *= input_resize_factor;
         K_mat.at<double>(2, 2) = 1.0;
 #endif
+        // 从文件存储中读取D矩阵
         cv::Mat D_mat;
-        fs["D"] >> D_mat;
-        fs.release();
-        cv::cv2eigen(K_mat, K);
-        cv::cv2eigen(D_mat, D);
+        fs["D"] >> D_mat;   // 从文件存储fs中读取名为"D"的数据到D_mat
+        fs.release();       // 释放文件存储fs的资源
+
+        // 将OpenCV的矩阵格式转换为Eigen的矩阵格式
+        cv::cv2eigen(K_mat, K);   // 将OpenCV的K_mat矩阵转换为Eigen的K矩阵
+        cv::cv2eigen(D_mat, D);   // 将OpenCV的D_mat矩阵转换为Eigen的D矩阵
 
         Eigen::Matrix4f extrin;   // 相机外参矩阵
         // 计算相机外参，如果是第一个相机，则直接使用单位矩阵，否则从文件中读取相对变换矩阵
-        {
-            Eigen::Vector3f eulerAngle(
-                yawpitchroll[camera_idx][0] * 3.141592653 / 180.0,
-                yawpitchroll[camera_idx][1] * 3.141592653 / 180.0,
-                yawpitchroll[camera_idx][2] * 3.141592653 / 180.0);
-            Eigen::AngleAxisf yawAngle(
-                Eigen::AngleAxisf(eulerAngle(0), Eigen::Vector3f::UnitY()));
-            Eigen::AngleAxisf pitchAngle(
-                Eigen::AngleAxisf(eulerAngle(1), Eigen::Vector3f::UnitX()));
-            Eigen::AngleAxisf rollAngle(
-                Eigen::AngleAxisf(eulerAngle(2), Eigen::Vector3f::UnitZ()));
-            Eigen::AngleAxisf rotation_vector;
-            rotation_vector       = yawAngle * pitchAngle * rollAngle;
-            Eigen::Matrix4f T     = Eigen::Matrix4f::Identity();
-            T.topLeftCorner(3, 3) = rotation_vector.toRotationMatrix();
-            extrin                = T.inverse();
 
-            if (camera_idx == 1) {
-                extrin = Eigen::Matrix4f::Identity();
-            } else {
-                int camera_name = camera_name_map[camera_idx];
-                std::string fs_file_name =
-                    "camera_extrin_" + std::to_string(mid_camera_name) +
-                    "_and_" + std::to_string(camera_name) + ".yaml";
-                std::filesystem::path fs_file_path("../example/yamls");
-                fs_file_path.append(fs_file_name);
-                cv::FileStorage fs;
-                if (!fs.open(fs_file_path, cv::FileStorage::Mode::READ)) {
-                    printf("cannot open fs %s\n", fs_file_path.c_str());
-                    exit(0);
-                }
-                cv::Mat rel_matrix;   // middle camera to i camera
-                std::string rel_matrix_name =
-                    "matrix" + std::to_string(mid_camera_name) + "to" +
-                    std::to_string(camera_name);
-                fs[rel_matrix_name] >> rel_matrix;
-                rel_matrix = rel_matrix.inv();
-                cv::cv2eigen(rel_matrix, extrin);
-                extrin.col(3) = Eigen::Vector4f(0, 0, 0, 1);
+        // 将yawpitchroll数组中的角度转换为弧度，并初始化eulerAngle1
+        Eigen::Vector3f eulerAngle1(
+            yawpitchroll[camera_idx][0] * 3.141592653 / 180.0,
+            yawpitchroll[camera_idx][1] * 3.141592653 / 180.0,
+            yawpitchroll[camera_idx][2] * 3.141592653 / 180.0);
+
+        // 分别为yaw, pitch, roll角度初始化AngleAxis对象
+        Eigen::AngleAxisf yawAngle1(
+            Eigen::AngleAxisf(eulerAngle1(0), Eigen::Vector3f::UnitY()));
+        Eigen::AngleAxisf pitchAngle1(
+            Eigen::AngleAxisf(eulerAngle1(1), Eigen::Vector3f::UnitX()));
+        Eigen::AngleAxisf rollAngle2(
+            Eigen::AngleAxisf(eulerAngle1(2), Eigen::Vector3f::UnitZ()));
+
+        // 组合三个旋转角得到最终的旋转向量
+        Eigen::AngleAxisf rotation_vector;
+        rotation_vector = yawAngle1 * pitchAngle1 * rollAngle2;
+
+        // 初始化变换矩阵T，并设置其旋转部分为旋转向量的旋转矩阵
+        Eigen::Matrix4f T     = Eigen::Matrix4f::Identity();
+        T.topLeftCorner(3, 3) = rotation_vector.toRotationMatrix();
+
+        // 计算相机的外参矩阵，若是相机索引为1，则直接设为单位矩阵
+        extrin = T.inverse();
+
+        if (camera_idx == 1) {
+            extrin = Eigen::Matrix4f::Identity();
+        } else {
+            // 根据相机索引，从yaml文件中读取相对变换矩阵，并转换为Eigen矩阵格式
+            int camera_name = camera_name_map[camera_idx];
+            std::string fs_file_name =
+                "camera_extrin_" + std::to_string(mid_camera_name) + "_and_" +
+                std::to_string(camera_name) + ".yaml";
+            std::filesystem::path fs_file_path("../example/yamls");
+            fs_file_path.append(fs_file_name);
+            cv::FileStorage fs;
+            if (!fs.open(fs_file_path, cv::FileStorage::Mode::READ)) {
+                printf("cannot open fs %s\n", fs_file_path.c_str());
+                exit(0);
             }
+            cv::Mat rel_matrix;   // middle camera to i camera
+            std::string rel_matrix_name = "matrix" +
+                                          std::to_string(mid_camera_name) +
+                                          "to" + std::to_string(camera_name);
+            fs[rel_matrix_name] >> rel_matrix;
+            rel_matrix = rel_matrix.inv();
+            cv::cv2eigen(rel_matrix, extrin);
+            extrin.col(3) = Eigen::Vector4f(0, 0, 0, 1);
         }
 
         // 添加相机内参和畸变参数到向量中
@@ -143,8 +155,8 @@ int frontStitcherMain(int argc, char** argv) {
         }
     }
 
-    int ar_vis_width = 1920, ar_vis_height = 1080;
 #ifdef USE_INPUT_RESIZE_FACTOR
+    int ar_vis_width = 1920, ar_vis_height = 1080;
     ar_vis_width *= input_resize_factor;
     ar_vis_height *= input_resize_factor;
 #endif
@@ -176,16 +188,16 @@ int frontStitcherMain(int argc, char** argv) {
     // 设置初始的俯仰翻滚角
     float yaw = 0 * 3.14159 / 180, pitch = 0 * 3.14159 / 180,
           roll = 80 * 3.14159 / 180;
-    Eigen::Vector3f eulerAngle(yaw, pitch, roll);
+    Eigen::Vector3f eulerAngle2(yaw, pitch, roll);
     // 通过欧拉角构建旋转矩阵
-    Eigen::AngleAxisf rollAngle(
-        Eigen::AngleAxisf(eulerAngle(2), Eigen::Vector3f::UnitX()));
-    Eigen::AngleAxisf pitchAngle(
-        Eigen::AngleAxisf(eulerAngle(1), Eigen::Vector3f::UnitY()));
-    Eigen::AngleAxisf yawAngle(
-        Eigen::AngleAxisf(eulerAngle(0), Eigen::Vector3f::UnitZ()));
+    Eigen::AngleAxisf rollAngle2(
+        Eigen::AngleAxisf(eulerAngle2(2), Eigen::Vector3f::UnitX()));
+    Eigen::AngleAxisf pitchAngle2(
+        Eigen::AngleAxisf(eulerAngle2(1), Eigen::Vector3f::UnitY()));
+    Eigen::AngleAxisf yawAngle2(
+        Eigen::AngleAxisf(eulerAngle2(0), Eigen::Vector3f::UnitZ()));
     Eigen::AngleAxisf rotation_vector;
-    rotation_vector = yawAngle * pitchAngle * rollAngle;
+    rotation_vector = yawAngle2 * pitchAngle2 * rollAngle2;
 
     // 将旋转矩阵部分赋值给相机位姿矩阵
     camera_pose.topLeftCorner(3, 3) = rotation_vector.toRotationMatrix();
@@ -218,13 +230,23 @@ int frontStitcherMain(int argc, char** argv) {
         "udpsrc port=5000 caps=application/x-rtp,media=(string)video,clock-rate=(int)90000,encoding-name=(string)H264,payload=(int)96 ! rtpjitterbuffer ! rtph264depay ! h264parse ! queue ! avdec_h264 ! videoconvert ! video/x-raw ! appsink sync=false",
     };
 
+    /**
+     * 初始化并启动多个GstReceiver实例。
+     *
+     * @param view_num GstReceiver实例的数量。
+     *
+     * 此函数首先初始化指定数量的GstReceiver实例，然后尝试启动它们的接收工作线程。
+     * 对于每个实例，如果初始化成功，将打印一条相应的消息。
+     */
     std::vector<GstReceiver> gst_receivers(view_num);
     for (int i = 0; i < view_num; i++) {
         printf("initialize VideoCapture %d\n", i);
+        // 尝试初始化GstReceiver实例
         if (gst_receivers[i].initialize(gst_strs[i], 2)) {
             printf("initialize VideoCapture %d done\n", i);
         }
     }
+    // 启动所有成功初始化的GstReceiver实例的工作线程
     for (int i = 0; i < view_num; i++) {
         if (gst_receivers[i].startReceiveWorker()) {
             printf("start gst_receiver %d done\n", i);
@@ -330,13 +352,8 @@ int frontStitcherMain(int argc, char** argv) {
                    image[view_idx].data,
                    src_image_height * cropped_img_width * sizeof(uchar3));
         }
-        /**
-         * 释放所有图像视图的资源
-         *
-         * 该代码块遍历视图数组，并释放每个视图所占用的图像资源。
-         * 这是内存管理的一个重要部分，确保在不再需要图像数据时，
-         * 及时释放内存，防止内存泄漏。
-         */
+
+        // 释放所有图像视图的资源
         for (int i = 0; i < view_num; i++) {
             image[i].release();   // 释放第i个图像视图的资源
         }
@@ -363,7 +380,7 @@ int frontStitcherMain(int argc, char** argv) {
         ++time;
         out_image(cv::Rect(0, 70, out_image.cols, out_image.rows - 80))
             .copyTo(out_image);
-        cv::resize(out_image, out_image, cv::Size(640, 360));
+        cv::resize(out_image, out_image, cv::Size(1280, 720));
         // 发送调整后的图像
         ecal_image_sender.pubImage(out_image);
 

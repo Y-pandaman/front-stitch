@@ -401,7 +401,7 @@ struct CylinderImageGPU4Channels {
     bool toCPU(cv::Mat& image_, cv::Mat& mask_) {
         uchar4* data_rgb;
         uchar* data_mask;
-        int* data_uv;
+        // int* data_uv;
         cudaHostAlloc((void**)&data_rgb, sizeof(uchar4) * height * width,
                       cudaHostAllocDefault);
         cudaHostAlloc((void**)&data_mask, sizeof(uchar) * height * width,
@@ -480,7 +480,7 @@ struct CylinderImageGPU {
     bool toCPU(cv::Mat& image_, cv::Mat& mask_) {
         uchar3* data_rgb;
         uchar* data_mask;
-        int* data_uv;
+        // int* data_uv;
         cudaHostAlloc((void**)&data_rgb, sizeof(uchar3) * height * width,
                       cudaHostAllocDefault);
         cudaHostAlloc((void**)&data_mask, sizeof(uchar) * height * width,
