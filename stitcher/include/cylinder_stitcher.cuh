@@ -562,19 +562,16 @@ public:
     void setExtraImageCuda(float* image_cuda, int width, int height);
     void setBoundingBoxesImage(uchar3* image, int width, int height);
     void setMasks(uchar* images, int width, int height, int view_num);
-    void setYawPitchRoll(std::vector<std::vector<int>> yawpitchroll);
     void setCameras(std::vector<float4> intrins, std::vector<float4> distorts,
                     std::vector<float> extrins);
     void setExtraViewCamera(float4 intrin, std::vector<float> extrin_float);
     void alignImages(int time);
     void findSeam();
-    void blending();
     void drawBoundingBoxes(cv::Mat& image, std::vector<float2>& boxes);
     void drawBoundingBoxes_2(cv::Mat& image, std::vector<float2>& boxes);
     void stitch_project_to_cyn(int time);
     void stitch_align_seam_blend(int time);
     void stitch_project_to_screen(int time);
-    void showAllCynImages();
     void getCylinderImageGPU(uchar3*& image, uchar*& mask, int& width,
                              int& height);
     void getCylinderImageCPU(cv::Mat& image, cv::Mat& mask);

@@ -39,7 +39,7 @@ CUDA_ADD_EXECUTABLE(cylinder_stitcher_example src/main.cpp)
 CUDA_ADD_LIBRARY(front_stitcher_main SHARED
 	include/FrontStitcherMain.h src/FrontStitcherMain.cpp
 	src/EcalImageSender.cpp include/EcalImageSender.h src/GstReceiver.cpp
-	src/Undistorter.cpp src/yolo.cpp src/yolo_detect.cpp src/loguru.cpp)
+	src/yolo.cpp src/yolo_detect.cpp src/loguru.cpp)
 
 set(protobuf_files
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/lane_line.proto
@@ -60,8 +60,6 @@ target_link_libraries(
 	${CUDA_cusparse_LIBRARY}
 	stitcher
 	ar_vis
-
-	# /usr/lib/x86_64-linux-gnu/libGL.so
 	${OPENGL_glu_LIBRARY}
 	${OpenCV_LIBS}
 	${ASSIMP_LIBRARIES}

@@ -14,6 +14,28 @@
 
 #define USE_CHOLSKY 0
 
+/**
+ * GNSolver的构造函数
+ * 用于初始化GNSolver对象，包括设置图像尺寸、节点尺寸、各种向量和矩阵的设备内存指针，以及初始化约束条件和求解器参数。
+ *
+ * @param img_rows 输入图像的行数
+ * @param img_cols 输入图像的列数
+ * @param node_img_rows 节点图像的行数
+ * @param node_img_cols 节点图像的列数
+ * @param d_pixel_rela_idx_vec 设备上像素关系索引向量的指针
+ * @param d_pixel_rela_weight_vec 设备上像素关系权重向量的指针
+ * @param d_node_rela_idx_vec 设备上节点关系索引向量的指针
+ * @param d_node_rela_weight_vec 设备上节点关系权重向量的指针
+ * @param d_original_node_vec 设备上原始节点向量的指针
+ * @param d_node_vec 设备上节点向量的指针
+ * @param d_src_img 输入图像的设备内存矩阵
+ * @param d_target_img 目标图像的设备内存矩阵
+ * @param d_dy_img 输入图像的梯度Y方向的设备内存矩阵
+ * @param d_dx_img 输入图像的梯度X方向的设备内存矩阵
+ * @param triangle_u 三角形的u参数
+ * @param triangle_v 三角形的v参数
+ * @param para 求解器参数
+ */
 GNSolver::GNSolver(int img_rows, int img_cols, int node_img_rows,
                    int node_img_cols, int* d_pixel_rela_idx_vec,
                    float* d_pixel_rela_weight_vec, int* d_node_rela_idx_vec,
@@ -32,10 +54,12 @@ GNSolver::GNSolver(int img_rows, int img_cols, int node_img_rows,
       d_src_img_(d_src_img), d_target_img_(d_target_img), d_dy_img_(d_dy_img),
       d_dx_img_(d_dx_img), triangle_u_(triangle_u), triangle_v_(triangle_v),
       para_(para) {
+    // 初始化基本变量
     pixel_num_    = img_rows * img_cols;
     triangle_num_ = (node_img_rows - 1) * (node_img_cols - 1) * 2;
     node_num_     = node_img_rows * node_img_cols;
 
+    // 根据求解器参数初始化不同的约束条件
     if (para.has_data_term_) {
         DataTermConstraint* p_term_cons = new DataTermConstraint;
         p_term_cons->Init(this, para.data_term_weight_);
@@ -52,49 +76,64 @@ GNSolver::GNSolver(int img_rows, int img_cols, int node_img_rows,
         cons_.push_back(p_term_cons);
     }
 
+    // 初始化变量数量及相关矩阵
     vars_num_ = node_num_ * 2;
     d_delta_.resize(vars_num_);
     d_JTb_.resize(vars_num_);
     d_preconditioner_.resize(vars_num_);
     d_JTJ_ = new SparseMatrixCSR(vars_num_, vars_num_);
 
-    /** 计算Iij集合 */
+    // 计算非零块统计信息，用于稀疏矩阵乘法
     nz_blocks_static_ = new NzBlockStatisticsForJTJ;
     nz_blocks_static_->CalcNzBlocksAndFunctions(
         pixel_num_, triangle_num_, node_num_, d_pixel_rela_idx_vec,
         d_pixel_rela_weight_vec, d_node_rela_idx_vec, d_node_rela_weight_vec);
 
-    /** 填充CSR格式，jtj_ia和jtj_ja */
+    // 初始化JTJ矩阵的CSR表示
     InitJTJ();
+    // 初始化PCG线性求解器
     pcg_linear_solver_ = new PcgLinearSolverGPU(vars_num_);
 }
 
+/**
+ * 结构体 InitJaOfJTJWrapper 用于初始化 jtj_ja 数组，
+ * jtj_ja 数组表示一个下三角和对角线部分的索引，该操作针对 CUDA 设备进行。
+ */
 struct InitJaOfJTJWrapper {
-    int* jtj_ja;
+    int* jtj_ja;   // 存储下三角和对角线部分的索引数组
 
-    int node_num;
-    int nz_block_num;
-    int* nz_block_idx;
-    int* pre_nz_block_num;
-    int* row_offset;
+    int node_num;            // 节点数量
+    int nz_block_num;        // 非零块的数量
+    int* nz_block_idx;       // 非零块的索引数组
+    int* pre_nz_block_num;   // 每个非零块前的非零元素数量
+    int* row_offset;   // 每行的偏移量，用于计算行内非零元素的起始位置
 
+    /**
+     * 在 CUDA 设备上运行的运算符()函数，用于填充 jtj_ja 数组。
+     * 填充规则为下三角和对角线部分，同时镜像填充上三角。
+     */
     __device__ void operator()() {
-        int idx = threadIdx.x + blockIdx.x * blockDim.x;
-        if (idx < nz_block_num) {
+        int idx =
+            threadIdx.x + blockIdx.x * blockDim.x;   // 计算当前线程处理的索引
+        if (idx < nz_block_num) {   // 检查索引是否在非零块的数量范围内
             // 填充下三角中的非零块
-            int index            = nz_block_idx[idx];
-            int seri_i           = index / node_num;
-            int seri_j           = index - seri_i * node_num;
-            int num_pre_row      = pre_nz_block_num[index];
-            int num_pre_all      = row_offset[seri_i];
-            int num_nnz_this_row = row_offset[seri_i + 1] - num_pre_all;
-            for (int iter_row = 0; iter_row < 2; ++iter_row) {
-                for (int iter_col = 0; iter_col < 2; ++iter_col) {
+            int index  = nz_block_idx[idx];
+            int seri_i = index / node_num;            // 计算行索引
+            int seri_j = index - seri_i * node_num;   // 计算列索引
+            int num_pre_row =
+                pre_nz_block_num[index];   // 当前行前的非零元素数量
+            int num_pre_all = row_offset[seri_i];   // 当前行起始的非零元素数量
+            int num_nnz_this_row = row_offset[seri_i + 1] -
+                                   num_pre_all;   // 当前行内的非零元素数量
+            for (int iter_row = 0; iter_row < 2;
+                 ++iter_row) {   // 遍历当前块的行
+                for (int iter_col = 0; iter_col < 2;
+                     ++iter_col) {   // 遍历当前块的列
                     jtj_ja[num_pre_all * 4 + iter_row * num_nnz_this_row * 2 +
                            num_pre_row * 2 + iter_col] = seri_j * 2 + iter_col;
                 }
             }
-            // 填充上三角中的非零块
+            // 填充上三角中的非零块，通过交换行和列来实现
             int tmp          = seri_i;
             seri_i           = seri_j;
             seri_j           = tmp;
@@ -111,22 +150,37 @@ struct InitJaOfJTJWrapper {
         }
     }
 };
+
+/**
+ * CUDA 核函数 InitJaOfJTJKernel 用于在 GPU 上初始化 jtj_ja 数组。
+ * @param ijoj_wrapper 包含所有必要数据和操作的 InitJaOfJTJWrapper 结构体实例。
+ */
 __global__ void InitJaOfJTJKernel(InitJaOfJTJWrapper ijoj_wrapper) {
-    ijoj_wrapper();
+    ijoj_wrapper();   // 调用 InitJaOfJTJWrapper 的运算符()函数完成初始化
 }
 
+/**
+ * 初始化JTJ矩阵的结构信息和非零元素数组。
+ * JTJ矩阵用于数值求解等过程中，此处主要完成矩阵存储结构的初始化。
+ *
+ * 无参数
+ * 无返回值
+ */
 void GNSolver::InitJTJ() {
+    // 计算JTJ矩阵的所有非零元素数量
     int all_nz_block_num =
         nz_blocks_static_->nz_block_num_ * 2 -
-        node_num_; /** 所有的非零元素个数，nz_block_num_为下三角非零元素个数 */
-    d_JTJ_->row_ = node_num_ * 2;
-    d_JTJ_->col_ = node_num_ * 2;
-    d_JTJ_->nnz_ = all_nz_block_num * 4;
+        node_num_; /** 所有的非零元素个数，基于下三角非零元素个数计算 */
+    d_JTJ_->row_ = node_num_ * 2;          // 矩阵行数
+    d_JTJ_->col_ = node_num_ * 2;          // 矩阵列数
+    d_JTJ_->nnz_ = all_nz_block_num * 4;   // 矩阵非零元素个数
+    // 分配存储空间
     d_JTJ_->d_ja_.resize(d_JTJ_->nnz_);
     d_JTJ_->d_ia_.resize(node_num_ * 2 + 1);
     d_JTJ_->d_a_.clear();
-    d_JTJ_->d_a_.resize(d_JTJ_->nnz_, 1.0f);
+    d_JTJ_->d_a_.resize(d_JTJ_->nnz_, 1.0f);   // 初始化非零元素值为1
 
+    // 准备kernel函数调用所需的参数
     InitJaOfJTJWrapper ijoj_wrapper;
     ijoj_wrapper.jtj_ja       = RAW_PTR(d_JTJ_->d_ja_);
     ijoj_wrapper.node_num     = node_num_;
@@ -135,15 +189,18 @@ void GNSolver::InitJTJ() {
     ijoj_wrapper.pre_nz_block_num =
         RAW_PTR(nz_blocks_static_->d_pre_nz_block_num_vec_);
     ijoj_wrapper.row_offset = RAW_PTR(nz_blocks_static_->d_row_offset_vec_);
-    int block               = 256,
-        grid = (nz_blocks_static_->nz_block_num_ + block - 1) / block;
+    // 调用CUDA kernel函数计算JTJ矩阵的ja数组
+    int block = 256,
+        grid  = (nz_blocks_static_->nz_block_num_ + block - 1) / block;
     InitJaOfJTJKernel<<<grid, block>>>(ijoj_wrapper);
 
+    // 在主机端创建临时向量用于构建ia数组
     thrust::host_vector<int> ia(node_num_ * 2 + 1);
     thrust::host_vector<int> row_offset = nz_blocks_static_->d_row_offset_vec_;
     int offset                          = 0;
     int nnz_each_row;
     int counter = 0;
+    // 计算并填充ia数组，用于索引JTJ矩阵的每一行的起始位置
     for (int iter = 0; iter < node_num_; ++iter) {
         nnz_each_row = (row_offset[iter + 1] - row_offset[iter]) * 2;
         for (int iter_inner = 0; iter_inner < 2; ++iter_inner) {
@@ -154,6 +211,7 @@ void GNSolver::InitJTJ() {
     }
     ia[counter]   = offset;
     d_JTJ_->d_ia_ = ia;
+    // 确保所有CUDA操作完成，检查是否有错误发生
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGetLastError());
 }

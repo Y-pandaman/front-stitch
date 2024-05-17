@@ -56,9 +56,9 @@ static inline __device__ float3 rotateVector(float3 X_axis, float3 Y_axis,
                        Z_axis.x * v.x + Z_axis.y * v.y + Z_axis.z * v.z);
 }
 
-__host__ void BlendExtraViewToScreen_cuda(uchar3* dst_cyl_img,
-                                          uchar3* src_cyl_img, int width,
-                                          int height, float w);
+// __host__ void BlendExtraViewToScreen_cuda(uchar3* dst_cyl_img,
+//                                           uchar3* src_cyl_img, int width,
+//                                           int height, float w);
 
 __host__ void BlendExtraViewToScreen4Channels_cuda(uchar3* dst_cyl_img,
                                                    uchar4* src_cyl_img,

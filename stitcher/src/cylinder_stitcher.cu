@@ -1,43 +1,16 @@
-﻿#include "cylinder_stitcher.cuh"
+﻿#include "cuda_utils.h"
+#include "cylinder_stitcher.cuh"
 #include "cylinder_stitcher.h"
-#include <Eigen/Eigen>
-#include <fstream>
-#include <opencv2/imgproc/types_c.h>
-#include <opencv2/opencv.hpp>
-
-#ifdef HAVE_OPENCV_VIZ
-#include <opencv2/viz.hpp>
-#endif
-#ifdef HAVE_OPENCV_XFEATURES2D
-#include "opencv2/calib3d.hpp"
-#include "opencv2/features2d.hpp"
-#include "opencv2/xfeatures2d.hpp"
-#include "opencv2/xfeatures2d/nonfree.hpp"
-#endif
-
-#include "cuda_utils.h"
-#include "image_alignment_cpu.h"
 #include "image_alignment_gpu.cuh"
 #include "innoreal_timer.hpp"
 #include "math_utils.h"
 #include "multiband_blend.cuh"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/opencv_modules.hpp"
-#include "opencv2/stitching/detail/autocalib.hpp"
-#include "opencv2/stitching/detail/blenders.hpp"
-#include "opencv2/stitching/detail/camera.hpp"
-#include "opencv2/stitching/detail/exposure_compensate.hpp"
-#include "opencv2/stitching/detail/matchers.hpp"
-#include "opencv2/stitching/detail/motion_estimators.hpp"
-#include "opencv2/stitching/detail/seam_finders.hpp"
-#include "opencv2/stitching/detail/timelapsers.hpp"
-#include "opencv2/stitching/detail/warpers.hpp"
-#include "opencv2/stitching/warpers.hpp"
 #include "project_to_cylinder.cuh"
 #include "render.cuh"
 #include "seam_finder.cuh"
-#include <opencv2/core/utility.hpp>
+#include <Eigen/Eigen>
+#include <fstream>
+#include <opencv2/opencv.hpp>
 
 #define PI 3.14159265358979323846
 #define INF 10000000.0f
@@ -429,8 +402,6 @@ void CylinderStitcherGPU::findSeam() {
                       separate_lines_, 20, seam_masks_, false);
     }
 }
-
-void CylinderStitcherGPU::blending() { }
 
 /**
  * 获取图像mask的边界点位置
@@ -845,52 +816,6 @@ void CylinderStitcherGPU::getCylinderImageGPU(uchar3*& image, uchar*& mask,
     mask   = cyl_images_[1].mask;
     width  = cyl_images_[1].width;
     height = cyl_images_[1].height;
-}
-
-void CylinderStitcherGPU::showAllCynImages() {
-    cv::Mat rgb_0, mask_0;
-    cv::Mat rgb_1, mask_1;
-    cv::Mat rgb_2, mask_2;
-    cv::Mat rgb_3, mask_3;
-    cyl_images_[0].toCPU(rgb_0, mask_0);
-    cyl_images_[1].toCPU(rgb_1, mask_1);
-    cyl_images_[2].toCPU(rgb_2, mask_2);
-
-    cv::imshow("rgb_0", rgb_0);
-    cv::imshow("rgb_1", rgb_1);
-    cv::imshow("rgb_2", rgb_2);
-
-    cv::Mat diff_01 =
-        cv::Mat::zeros(cyl_images_[1].height, cyl_images_[1].width, CV_8UC3);
-    for (int row = 0; row < cyl_images_[1].height; ++row) {
-        for (int col = 0; col < cyl_images_[1].width; ++col) {
-            uchar3 diff;
-            diff.x                       = abs(rgb_0.at<uchar3>(row, col).x -
-                         rgb_1.at<uchar3>(row, col).x);
-            diff.y                       = abs(rgb_0.at<uchar3>(row, col).y -
-                         rgb_1.at<uchar3>(row, col).y);
-            diff.z                       = abs(rgb_0.at<uchar3>(row, col).z -
-                         rgb_1.at<uchar3>(row, col).z);
-            diff_01.at<uchar3>(row, col) = diff;
-        }
-    }
-    cv::imshow("diff_01", diff_01);
-    cv::Mat diff_21 =
-        cv::Mat::zeros(cyl_images_[1].height, cyl_images_[1].width, CV_8UC3);
-    for (int row = 0; row < cyl_images_[1].height; ++row) {
-        for (int col = 0; col < cyl_images_[1].width; ++col) {
-            uchar3 diff;
-            diff.x                       = abs(rgb_2.at<uchar3>(row, col).x -
-                         rgb_1.at<uchar3>(row, col).x);
-            diff.y                       = abs(rgb_2.at<uchar3>(row, col).y -
-                         rgb_1.at<uchar3>(row, col).y);
-            diff.z                       = abs(rgb_2.at<uchar3>(row, col).z -
-                         rgb_1.at<uchar3>(row, col).z);
-            diff_21.at<uchar3>(row, col) = diff;
-        }
-    }
-    cv::imshow("diff_21", diff_21);
-    cv::waitKey(1);
 }
 
 void CylinderStitcherGPU::getCylinderImageCPU(cv::Mat& image, cv::Mat& mask) {

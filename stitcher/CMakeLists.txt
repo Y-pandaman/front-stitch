@@ -21,7 +21,6 @@ if(OPENMP_FOUND)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-# eigen3
 include_directories(
 	"./include"
 	"/usr/include/eigen3/"
@@ -37,7 +36,7 @@ SET(HEADER_FILES
 	include/math_utils.h
 	include/cylinder_stitcher.h
 	include/cylinder_stitcher.cuh
-	include/image_alignment_cpu.h
+	# include/image_alignment_cpu.h
 	include/image_alignment_gpu.cuh
 	include/nz_block_statistics.cuh
 	include/x_gn_solver.cuh
@@ -49,12 +48,12 @@ SET(HEADER_FILES
 	include/seam_finder.cuh
 	include/render.cuh
 	include/multiband_blend.cuh
-	include/test_JTJ.h
+	# include/test_JTJ.h
 )
 SET(SOURCE_FILES
-	src/cylinder_stitcher.cpp
+	# src/cylinder_stitcher.cpp
 	src/cylinder_stitcher.cu
-	src/image_alignment_cpu.cpp
+	# src/image_alignment_cpu.cpp
 	src/image_alignment_gpu.cu
 	src/nz_block_statistics.cu
 	src/x_gn_solver.cu
@@ -65,12 +64,11 @@ SET(SOURCE_FILES
 	src/seam_finder.cu
 	src/multiband_blend.cu
 	src/render.cu
-	src/test_JTJ.cpp
+	# src/test_JTJ.cpp
 )
 
 CUDA_ADD_LIBRARY(stitcher SHARED ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCES})
 
-# opencv
 target_link_libraries(stitcher ${CUDA_cusparse_LIBRARY})
 
 target_link_libraries(

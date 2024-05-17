@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-16 16:21:13
+ * @LastEditTime: 2024-05-17 10:45:27
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -37,19 +37,33 @@ void EcalImageSender::pubImage(cv::Mat image) {
     m_pub_image->Send(message_opencv_image);
 }
 
+/**
+ * @brief 打开Ecal图片发送器并配置发布者
+ *
+ * 该函数主要用于初始化Ecal图片发送器，检查并初始化eCAL库，配置发布者，
+ * 包括启用循环回路，设置网络层模式等。
+ *
+ * @param topic 要发布的主题名称
+ */
 void EcalImageSender::open(const std::string& topic) {
+    // 检查eCAL是否已初始化，如未初始化则进行初始化
     if (!eCAL::IsInitialized()) {
         eCAL::Initialize();
     }
+    // 启用循环回路，确保本地发布的消息可以被本地订阅者接收
     eCAL::Util::EnableLoopback(true);
+
+    // 创建并配置OpencvImage类型的protobuf发布者
     m_pub_image =
         std::make_shared<eCAL::protobuf::CPublisher<xcmg_proto::OpencvImage>>(
             topic);
 
+    // 设置发布者的网络层模式
+    // 全部禁用，只启用TCP和自动选择inproc及shm
     m_pub_image->SetLayerMode(eCAL::TLayer::tlayer_all,
                               eCAL::TLayer::smode_off);
     m_pub_image->SetLayerMode(eCAL::TLayer::tlayer_tcp,
-                              eCAL::TLayer::smode_on);   // 使用TCP
+                              eCAL::TLayer::smode_on);   // 启用TCP层
     m_pub_image->SetLayerMode(eCAL::TLayer::tlayer_inproc,
                               eCAL::TLayer::smode_auto);
     m_pub_image->SetLayerMode(eCAL::TLayer::tlayer_shm,

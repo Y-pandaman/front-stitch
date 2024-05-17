@@ -7,7 +7,7 @@
 #include "innoreal_timer.hpp"
 #include "math_utils.h"
 #include "reduce.cuh"
-#include "test_JTJ.h"
+// #include "test_JTJ.h"
 #include "x_gn_solver.cuh"
 #include <opencv2/imgproc/types_c.h>
 

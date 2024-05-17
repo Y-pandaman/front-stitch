@@ -5,13 +5,21 @@
 #include "x_gn_solver.cuh"
 #include <device_launch_parameters.h>
 
+/**
+ * 初始化数据项约束。
+ * 该函数为数据项约束初始化过程，负责设置相关的求解器指针、行列数、以及权重。
+ *
+ * @param gn_solver 指向GNSolver对象的指针，用于获取和设置求解器的相关参数。
+ * @param weight 权重参数，用于数据项约束的加权。
+ * @return 总是返回true，表示初始化成功。
+ */
 bool DataTermConstraint::Init(GNSolver* gn_solver, float weight) {
-    assert(gn_solver);
-    gn_solver_ = gn_solver;
-    row_       = gn_solver_->pixel_num_;
-    col_       = gn_solver_->vars_num_;
-    d_b_.resize(row_);
-    SetWeight(weight);
+    assert(gn_solver);        // 确保gn_solver不为nullptr。
+    gn_solver_ = gn_solver;   // 存储GNSolver对象的指针。
+    row_ = gn_solver_->pixel_num_;   // 设置行数，基于gn_solver的像素数量。
+    col_ = gn_solver_->vars_num_;   // 设置列数，基于gn_solver的变量数量。
+    d_b_.resize(row_);              // 根据行数调整d_b_向量的大小。
+    SetWeight(weight);              // 设置权重。
 
     return true;
 }
@@ -44,16 +52,19 @@ void DataTermConstraint::GetJTJAndJTb(float* d_JTJ_a, int* d_JTJ_ia,
 
 /**
  * 在GPU上计算数据项残差的内核函数。
- * 
+ *
  * @param b 存储残差的结果数组，其大小为像素数量。
  * @param pixel_num 图像中像素的数量。
  * @param rows 输入图像的行数。
  * @param cols 输入图像的列数。
- * @param blur_src_img 模糊的源图像的设备内存指针，使用cv::cuda::PtrStepSz封装以提供行步长和图像尺寸信息。
- * @param blur_target_img 模糊的目标图像的设备内存指针，同样使用cv::cuda::PtrStepSz封装。
- * @param warped_pixel_vec 已经映射（变形）的像素点的数组，其大小为像素数量，每个元素为float2。
+ * @param blur_src_img
+ * 模糊的源图像的设备内存指针，使用cv::cuda::PtrStepSz封装以提供行步长和图像尺寸信息。
+ * @param blur_target_img
+ * 模糊的目标图像的设备内存指针，同样使用cv::cuda::PtrStepSz封装。
+ * @param warped_pixel_vec
+ * 已经映射（变形）的像素点的数组，其大小为像素数量，每个元素为float2。
  * @param weight 残差的权重因子。
- * 
+ *
  * 该函数遍历所有像素，计算源图像和目标图像在给定已变形像素位置的强度差异，并根据这一差异更新结果数组b。
  */
 __global__ void
@@ -91,7 +102,7 @@ CalcDataTermResidualKernel(float* b, int pixel_num, int rows, int cols,
 /**
  * 为数据项约束项设置b向量。
  * 该函数首先清零b向量，然后通过调用CUDA内核计算数据项残差，更新b向量。
- * 
+ *
  * @param d_x 指向设备上b向量的指针。
  */
 void DataTermConstraint::b(float* d_x) {
@@ -116,13 +127,14 @@ void DataTermConstraint::b(float* d_x) {
 
 /**
  * 计算数据项的JTJ矩阵
- * 
+ *
  * 本函数用于计算光流估计过程中的数据项的JTJ矩阵，该矩阵用于后续的光流优化过程。
  * JTJ矩阵反映了图像像素变化与光流估计之间的关系。
  *
  * @param d_JTJ_a 指向JTJ矩阵浮点数数组的指针，该数组在GPU内存中。
- * @param d_JTJ_ia 指向JTJ矩阵索引数组的指针，该数组在GPU内存中，用于存储矩阵非零元素的索引。
- * 
+ * @param d_JTJ_ia
+ * 指向JTJ矩阵索引数组的指针，该数组在GPU内存中，用于存储矩阵非零元素的索引。
+ *
  * 注意：函数不返回任何值，但会通过CUDA错误检查确保执行过程无误。
  */
 void DataTermConstraint::DirectiveJTJ(float* d_JTJ_a, int* d_JTJ_ia) {
@@ -142,10 +154,10 @@ void DataTermConstraint::DirectiveJTJ(float* d_JTJ_a, int* d_JTJ_ia) {
 
 /**
  * 计算数据项约束的Jacobian乘以b的项
- * 
+ *
  * 本函数用于计算光流估计中的数据项约束的Jacobian乘以b的项，这是光流优化过程中的一个步骤。
  * 具体地，它通过调用`CalcDataTermJTb`来完成计算，并检查CUDA执行过程中的错误。
- * 
+ *
  * @param d_JTb 指向CUDA设备内存中存放Jacobian乘以b的结果的指针。
  */
 void DataTermConstraint::DirectiveJTb(float* d_JTb) {
@@ -164,13 +176,24 @@ void DataTermConstraint::DirectiveJTb(float* d_JTb) {
     checkCudaErrors(cudaGetLastError());
 }
 
+/**
+ * 初始化平滑项约束
+ *
+ * 本函数用于初始化平滑项约束，将平滑项约束与高斯牛顿求解器关联，并设置约束的权重。
+ * 这个约束主要用于优化过程中，以平滑目标函数中各变量的变化。
+ *
+ * @param gn_solver 指向GNSolver对象的指针，用于获取求解器的相关参数和状态。
+ * @param weight 平滑项的权重，用于控制平滑程度。
+ * @return 总是返回true，表示初始化成功。
+ */
 bool SmoothTermConstraint::Init(GNSolver* gn_solver, float weight) {
-    assert(gn_solver);
-    gn_solver_ = gn_solver;
-    row_       = gn_solver_->triangle_num_ * 2;
-    col_       = gn_solver_->vars_num_;
-    d_b_.resize(row_);
-    SetWeight(weight);
+    assert(gn_solver);   // 确保gn_solver不为nullptr
+
+    gn_solver_ = gn_solver;                 // 存储传入的GNSolver指针
+    row_ = gn_solver_->triangle_num_ * 2;   // 根据三角形数量计算行数
+    col_ = gn_solver_->vars_num_;           // 根据变量数量设置列数
+    d_b_.resize(row_);   // 根据行数调整d_b_向量的大小
+    SetWeight(weight);   // 设置平滑项的权重
 
     return true;
 }
@@ -308,14 +331,21 @@ void SmoothTermConstraint::DirectiveJTb(float* d_JTb) {
     checkCudaErrors(cudaGetLastError());
 }
 
-#if 1
+/**
+ * 初始化零项约束
+ * 该函数用于初始化零项约束，将约束应用于梯度下降法（GNSolver）中，确保某些变量的更新为零。
+ *
+ * @param gn_solver 指向GNSolver对象的指针，GNSolver是进行梯度下降解算的主对象。
+ * @param weight 权重参数，用于调整零项约束的影响力。
+ * @return 总是返回true，表示初始化成功。
+ */
 bool ZeroTermConstraint::Init(GNSolver* gn_solver, float weight) {
-    assert(gn_solver);
-    gn_solver_ = gn_solver;
-    row_       = gn_solver_->node_num_ * 2;
-    col_       = gn_solver_->vars_num_;
-    d_b_.resize(row_);
-    SetWeight(weight);
+    assert(gn_solver);        // 确保gn_solver不为nullptr。
+    gn_solver_ = gn_solver;   // 保存GNSolver指针到成员变量。
+    row_       = gn_solver_->node_num_ * 2;   // 根据节点数量计算约束矩阵的行数。
+    col_ = gn_solver_->vars_num_;   // 根据变量数量计算约束矩阵的列数。
+    d_b_.resize(row_);   // 调整约束偏置项d_b_的大小，以适应行数。
+    SetWeight(weight);   // 设置约束的权重。
 
     return true;
 }
@@ -408,4 +438,3 @@ void ZeroTermConstraint::DirectiveJTb(float* d_JTb) {
     // 检查CUDA是否发生错误
     checkCudaErrors(cudaGetLastError());
 }
-#endif

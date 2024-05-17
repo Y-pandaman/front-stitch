@@ -379,134 +379,134 @@ BackProjToSrc_kernel(uchar3* src_color, uchar* mask, int src_h, int src_w,
     }
 }
 
-static inline __device__ bool RayCylinderIntersection(float3 origin, float3 dir,
-                                                      float r,
-                                                      float3& intersection) {
-    float3 abs_dir = fabs(dir);
+// static inline __device__ bool RayCylinderIntersection(float3 origin, float3 dir,
+//                                                       float r,
+//                                                       float3& intersection) {
+//     float3 abs_dir = fabs(dir);
 
-    if (abs_dir.x < CLOSE_ZERO) {
-        intersection.x = origin.x;
-        intersection.z = sqrtf(powf(r, 2.0f) - powf(intersection.x, 2.0f));
+//     if (abs_dir.x < CLOSE_ZERO) {
+//         intersection.x = origin.x;
+//         intersection.z = sqrtf(powf(r, 2.0f) - powf(intersection.x, 2.0f));
 
-        if ((intersection.z - origin.z) / dir.z < 0)
-            intersection.z *= -1.0f;
+//         if ((intersection.z - origin.z) / dir.z < 0)
+//             intersection.z *= -1.0f;
 
-    } else if (abs_dir.z < CLOSE_ZERO) {
-        intersection.z = origin.z;
-        intersection.x = sqrtf(powf(r, 2.0f) - powf(intersection.z, 2.0f));
+//     } else if (abs_dir.z < CLOSE_ZERO) {
+//         intersection.z = origin.z;
+//         intersection.x = sqrtf(powf(r, 2.0f) - powf(intersection.z, 2.0f));
 
-        if ((intersection.x - origin.x) / dir.x < 0)
-            intersection.x *= -1.0f;
+//         if ((intersection.x - origin.x) / dir.x < 0)
+//             intersection.x *= -1.0f;
 
-    } else {
-        float k = dir.z / dir.x;
-        float b = origin.z - k * origin.x;
+//     } else {
+//         float k = dir.z / dir.x;
+//         float b = origin.z - k * origin.x;
 
-        float check =
-            powf(2.0f * k * b, 2.0f) - 4 * (1 + k * k) * (b * b - r * r);
-        if (check < 0)
-            return false;
+//         float check =
+//             powf(2.0f * k * b, 2.0f) - 4 * (1 + k * k) * (b * b - r * r);
+//         if (check < 0)
+//             return false;
 
-        float item = sqrtf(check);
+//         float item = sqrtf(check);
 
-        float x1 = (-2.0f * k * b + item) / (2 * (1 + k * k));
-        float x2 = (-2.0f * k * b - item) / (2 * (1 + k * k));
+//         float x1 = (-2.0f * k * b + item) / (2 * (1 + k * k));
+//         float x2 = (-2.0f * k * b - item) / (2 * (1 + k * k));
 
-        float z1 = k * x1 + b;
-        float z2 = k * x2 + b;
+//         float z1 = k * x1 + b;
+//         float z2 = k * x2 + b;
 
-        if ((x1 - origin.x) / dir.x > 0 && (z1 - origin.z) / dir.z > 0) {
-            intersection.x = x1;
-            intersection.z = z1;
-        } else {
-            intersection.x = x2;
-            intersection.z = z2;
-        }
-    }
+//         if ((x1 - origin.x) / dir.x > 0 && (z1 - origin.z) / dir.z > 0) {
+//             intersection.x = x1;
+//             intersection.z = z1;
+//         } else {
+//             intersection.x = x2;
+//             intersection.z = z2;
+//         }
+//     }
 
-    float t_xz      = sqrtf(powf(intersection.x - origin.x, 2.0f) +
-                       powf(intersection.z - origin.z, 2.0f));
-    float tan_theta = dir.y / sqrtf(dir.x * dir.x + dir.z * dir.z);
+//     float t_xz      = sqrtf(powf(intersection.x - origin.x, 2.0f) +
+//                        powf(intersection.z - origin.z, 2.0f));
+//     float tan_theta = dir.y / sqrtf(dir.x * dir.x + dir.z * dir.z);
 
-    intersection.y = origin.y + t_xz * tan_theta;
-}
+//     intersection.y = origin.y + t_xz * tan_theta;
+// }
 
-__global__ void GetBoundingBox_kernel(float* theta, float* phi, CylinderGPU cyl,
-                                      PinholeCameraGPU cam0,
-                                      PinholeCameraGPU cam1,
-                                      PinholeCameraGPU cam2, int height,
-                                      int width) {
-    int taskIdx = threadIdx.x + blockIdx.x * blockDim.x;
+// __global__ void GetBoundingBox_kernel(float* theta, float* phi, CylinderGPU cyl,
+//                                       PinholeCameraGPU cam0,
+//                                       PinholeCameraGPU cam1,
+//                                       PinholeCameraGPU cam2, int height,
+//                                       int width) {
+//     int taskIdx = threadIdx.x + blockIdx.x * blockDim.x;
 
-    int x, y;
-    if (taskIdx < width) {
-        x = taskIdx;
-        y = 0;
-    } else if (taskIdx < 2 * width) {
-        x = taskIdx - width;
-        y = height - 1;
-    } else if (taskIdx < 2 * width + height) {
-        x = 0;
-        y = taskIdx - 2 * width;
-    } else if (taskIdx < 2 * (width + height)) {
-        x = width - 1;
-        y = taskIdx - (2 * width + height);
-    } else {
-        return;
-    }
+//     int x, y;
+//     if (taskIdx < width) {
+//         x = taskIdx;
+//         y = 0;
+//     } else if (taskIdx < 2 * width) {
+//         x = taskIdx - width;
+//         y = height - 1;
+//     } else if (taskIdx < 2 * width + height) {
+//         x = 0;
+//         y = taskIdx - 2 * width;
+//     } else if (taskIdx < 2 * (width + height)) {
+//         x = width - 1;
+//         y = taskIdx - (2 * width + height);
+//     } else {
+//         return;
+//     }
 
-    float3 dir, origin, P;
+//     float3 dir, origin, P;
 
-    if (blockIdx.y == 0) {
-        dir    = cyl.rotateVector(cam0.getRay(x, y));
-        origin = cyl.rotateVector(cam0.getCenter() - cyl.getCenter());
-    } else if (blockIdx.y == 1) {
-        dir    = cyl.rotateVector(cam1.getRay(x, y));
-        origin = cyl.rotateVector(cam1.getCenter() - cyl.getCenter());
-    } else {
-        dir    = cyl.rotateVector(cam2.getRay(x, y));
-        origin = cyl.rotateVector(cam2.getCenter() - cyl.getCenter());
-    }
+//     if (blockIdx.y == 0) {
+//         dir    = cyl.rotateVector(cam0.getRay(x, y));
+//         origin = cyl.rotateVector(cam0.getCenter() - cyl.getCenter());
+//     } else if (blockIdx.y == 1) {
+//         dir    = cyl.rotateVector(cam1.getRay(x, y));
+//         origin = cyl.rotateVector(cam1.getCenter() - cyl.getCenter());
+//     } else {
+//         dir    = cyl.rotateVector(cam2.getRay(x, y));
+//         origin = cyl.rotateVector(cam2.getCenter() - cyl.getCenter());
+//     }
 
-    RayCylinderIntersection(origin, dir, cyl.r, P);
+//     RayCylinderIntersection(origin, dir, cyl.r, P);
 
-    theta[blockIdx.y * 2 * (width + height) + taskIdx] = atanf(P.x / P.z);
-    phi[blockIdx.y * 2 * (width + height) + taskIdx]   = P.y / cyl.r;
-}
+//     theta[blockIdx.y * 2 * (width + height) + taskIdx] = atanf(P.x / P.z);
+//     phi[blockIdx.y * 2 * (width + height) + taskIdx]   = P.y / cyl.r;
+// }
 
-static __global__ void GetBoundingBox_kernel_v2(float* theta, float* phi,
-                                                CylinderGPU cyl,
-                                                PinholeCameraGPU cam0,
-                                                PinholeCameraGPU cam1,
-                                                PinholeCameraGPU cam2) {
-    int taskIdx      = threadIdx.x + blockIdx.x * blockDim.x;
-    int total_thread = blockDim.x * gridDim.x;
-    int totalPixel   = cyl.offset[3];
+// static __global__ void GetBoundingBox_kernel_v2(float* theta, float* phi,
+//                                                 CylinderGPU cyl,
+//                                                 PinholeCameraGPU cam0,
+//                                                 PinholeCameraGPU cam1,
+//                                                 PinholeCameraGPU cam2) {
+//     int taskIdx      = threadIdx.x + blockIdx.x * blockDim.x;
+//     int total_thread = blockDim.x * gridDim.x;
+//     int totalPixel   = cyl.offset[3];
 
-    while (taskIdx < totalPixel) {
-        int2 loc = cyl.boundary_pixel[taskIdx];
-        int x = loc.x, y = loc.y;
+//     while (taskIdx < totalPixel) {
+//         int2 loc = cyl.boundary_pixel[taskIdx];
+//         int x = loc.x, y = loc.y;
 
-        float3 dir, origin, P;
-        if (taskIdx < cyl.offset[1]) {
-            dir    = cyl.rotateVector(cam0.getRay(x, y));
-            origin = cyl.rotateVector(cam0.getCenter() - cyl.getCenter());
-        } else if (taskIdx < cyl.offset[2]) {
-            dir    = cyl.rotateVector(cam1.getRay(x, y));
-            origin = cyl.rotateVector(cam1.getCenter() - cyl.getCenter());
-        } else {
-            dir    = cyl.rotateVector(cam2.getRay(x, y));
-            origin = cyl.rotateVector(cam2.getCenter() - cyl.getCenter());
-        }
-        RayCylinderIntersection(origin, dir, cyl.r, P);
+//         float3 dir, origin, P;
+//         if (taskIdx < cyl.offset[1]) {
+//             dir    = cyl.rotateVector(cam0.getRay(x, y));
+//             origin = cyl.rotateVector(cam0.getCenter() - cyl.getCenter());
+//         } else if (taskIdx < cyl.offset[2]) {
+//             dir    = cyl.rotateVector(cam1.getRay(x, y));
+//             origin = cyl.rotateVector(cam1.getCenter() - cyl.getCenter());
+//         } else {
+//             dir    = cyl.rotateVector(cam2.getRay(x, y));
+//             origin = cyl.rotateVector(cam2.getCenter() - cyl.getCenter());
+//         }
+//         RayCylinderIntersection(origin, dir, cyl.r, P);
 
-        theta[taskIdx] = clamp(atan2f(P.x, P.z), -3.141592653 / 2 + 0.001,
-                               3.141592653 / 2 - 0.001);
-        phi[taskIdx]   = P.y / cyl.r;
+//         theta[taskIdx] = clamp(atan2f(P.x, P.z), -3.141592653 / 2 + 0.001,
+//                                3.141592653 / 2 - 0.001);
+//         phi[taskIdx]   = P.y / cyl.r;
 
-        taskIdx += total_thread;
-    }
-}
+//         taskIdx += total_thread;
+//     }
+// }
 
 /**
  * 将四个通道的额外视图投影到圆柱图像
@@ -549,32 +549,32 @@ bool proj4ChannelsExtraViewToCylinderImage_cuda(
     return true;
 }
 
-bool projExtraViewToCylinderImage_cuda(ViewGPU extra_view,
-                                       CylinderImageGPU& extra_cyl_image,
-                                       CylinderGPU& cylinder,
-                                       int cyl_image_width,
-                                       int cyl_image_height) {
-    int height = extra_view.height, width = extra_view.width;
-    int size_c     = cylinder.offset[3];
-    int num_thread = 512;
-    int num_block  = min(65535, (size_c + num_thread - 1) / num_thread);
-    int num_block2 =
-        min(65535,
-            (cyl_image_width * cyl_image_height + num_thread - 1) / num_thread);
+// bool projExtraViewToCylinderImage_cuda(ViewGPU extra_view,
+//                                        CylinderImageGPU& extra_cyl_image,
+//                                        CylinderGPU& cylinder,
+//                                        int cyl_image_width,
+//                                        int cyl_image_height) {
+//     int height = extra_view.height, width = extra_view.width;
+//     int size_c     = cylinder.offset[3];
+//     int num_thread = 512;
+//     int num_block  = min(65535, (size_c + num_thread - 1) / num_thread);
+//     int num_block2 =
+//         min(65535,
+//             (cyl_image_width * cyl_image_height + num_thread - 1) / num_thread);
 
-    BackProjToSrc_kernel<<<num_block2, num_thread>>>(
-        extra_view.image, extra_view.mask, extra_view.height, extra_view.width,
-        cylinder, extra_view.camera, extra_cyl_image.image,
-        extra_cyl_image.mask, extra_cyl_image.uv, cylinder.global_theta,
-        cylinder.global_phi, cylinder.global_theta + 1, cylinder.global_phi + 1,
-        cylinder.global_theta, cylinder.global_phi, cyl_image_height,
-        cyl_image_width, false);
+//     BackProjToSrc_kernel<<<num_block2, num_thread>>>(
+//         extra_view.image, extra_view.mask, extra_view.height, extra_view.width,
+//         cylinder, extra_view.camera, extra_cyl_image.image,
+//         extra_cyl_image.mask, extra_cyl_image.uv, cylinder.global_theta,
+//         cylinder.global_phi, cylinder.global_theta + 1, cylinder.global_phi + 1,
+//         cylinder.global_theta, cylinder.global_phi, cyl_image_height,
+//         cyl_image_width, false);
 
-    checkCudaErrors(cudaDeviceSynchronize());
-    checkCudaErrors(cudaGetLastError());
+//     checkCudaErrors(cudaDeviceSynchronize());
+//     checkCudaErrors(cudaGetLastError());
 
-    return true;
-}
+//     return true;
+// }
 
 /**
  * 将多个视图的图像数据投影到一个圆柱体图像上。
@@ -627,26 +627,26 @@ bool projToCylinderImage_cuda(std::vector<ViewGPU> views,
     return true;
 }
 
-__global__ void
-ForwardProjToCylinder_kernel(float2* cylinder_coor,   // theta phi
-                             CylinderGPU cyl, PinholeCameraGPU cam, int height,
-                             int width) {
-    int pixelIdx     = threadIdx.x + blockIdx.x * blockDim.x;
-    int total_thread = blockDim.x * gridDim.x;
-    int totalPixel   = height * width;
-    while (pixelIdx < totalPixel) {
-        int x = pixelIdx % width;
-        int y = pixelIdx / width;
+// __global__ void
+// ForwardProjToCylinder_kernel(float2* cylinder_coor,   // theta phi
+//                              CylinderGPU cyl, PinholeCameraGPU cam, int height,
+//                              int width) {
+//     int pixelIdx     = threadIdx.x + blockIdx.x * blockDim.x;
+//     int total_thread = blockDim.x * gridDim.x;
+//     int totalPixel   = height * width;
+//     while (pixelIdx < totalPixel) {
+//         int x = pixelIdx % width;
+//         int y = pixelIdx / width;
 
-        float3 dir    = cyl.rotateVector(cam.getRay(x, y));
-        float3 origin = cyl.rotateVector(cam.getCenter() - cyl.getCenter());
+//         float3 dir    = cyl.rotateVector(cam.getRay(x, y));
+//         float3 origin = cyl.rotateVector(cam.getCenter() - cyl.getCenter());
 
-        float3 P;
-        RayCylinderIntersection(origin, dir, cyl.r, P);
+//         float3 P;
+//         RayCylinderIntersection(origin, dir, cyl.r, P);
 
-        cylinder_coor[pixelIdx].x = atanf(P.x / P.z);
-        cylinder_coor[pixelIdx].y = P.y / cyl.r;
+//         cylinder_coor[pixelIdx].x = atanf(P.x / P.z);
+//         cylinder_coor[pixelIdx].y = P.y / cyl.r;
 
-        pixelIdx += total_thread;
-    }
-}
+//         pixelIdx += total_thread;
+//     }
+// }
