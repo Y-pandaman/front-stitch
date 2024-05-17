@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-16 20:15:21
+ * @LastEditTime: 2024-05-16 20:54:00
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -91,9 +91,19 @@ public:
     void setCross(float width, float loc, float interval, float len,
                   float _interval_factor);
 
+        /**
+     * 设置文本源管理器
+     * 
+     * 本函数用于设置文本处理系统的文本源管理器。文本源管理器负责管理和提供文本源，
+     * 是系统中关键的组成部分之一。通过设置合适的文本源管理器，系统能够正确地获取
+     * 和处理所需的文本数据。
+     * 
+     * @param _text_source_manager 指向TextSourceManager对象的指针。该参数不应为nullptr，以确保系统能够正确访问和使用文本源管理器。
+     * 
+     * @return 无返回值
+     */
     void setTextSourceManager(const TextSourceManager* _text_source_manager) {
-        text_source_manager = _text_source_manager;
+        text_source_manager = _text_source_manager; // 更新文本源管理器指针
     }
 };
-
 #endif   // DRAW_TRACK_TRACK_H
