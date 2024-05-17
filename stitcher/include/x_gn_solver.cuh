@@ -46,7 +46,6 @@ public:
 };
 
 class NzBlockStatisticsForJTJ;
-class PcgLinearSolverCPUGPU;
 class PcgLinearSolverGPU;
 
 class GNSolver {

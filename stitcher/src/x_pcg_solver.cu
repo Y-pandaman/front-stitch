@@ -362,129 +362,37 @@ __global__ void SparseMvKernel(SparseMvWrapper spmv_wrapper) {
     spmv_wrapper();   // 直接调用传递的包装器对象，执行稀疏矩阵向量乘法的具体计算。
 }
 
-PcgLinearSolverCPUGPU::PcgLinearSolverCPUGPU(int row)
-    : cusparseHandle_(nullptr), descr_(nullptr), row_(row) {
-    cusparseCreate(&cusparseHandle_);
-    cusparseCreateMatDescr(&descr_);
-    cusparseSetMatIndexBase(descr_, CUSPARSE_INDEX_BASE_ZERO);
 
-    d_buf_.resize(row_ * 2);
-    d_p_     = RAW_PTR(d_buf_);
-    d_omega_ = RAW_PTR(d_buf_) + row_;
-
-    buf_.resize(row_ * 6);
-    omega_   = buf_.data();
-    p_       = buf_.data() + row_;
-    r_       = buf_.data() + row_ * 2;
-    z_       = buf_.data() + row_ * 3;
-    delta_x_ = buf_.data() + row_ * 4;
-    precond_ = buf_.data() + row_ * 5;
-
-    spmv_wrapper_ = new SparseMvWrapper;
-}
-
-PcgLinearSolverCPUGPU::~PcgLinearSolverCPUGPU() {
-    cusparseDestroy(cusparseHandle_);
-    cusparseDestroyMatDescr(descr_);
-
-    delete spmv_wrapper_;
-}
-
-void PcgLinearSolverCPUGPU::Solve(float* d_x, int* d_ia, int* d_ja, float* d_a,
-                                  int num_nnz, float* d_b, float* precond,
-                                  int max_iter) {
-    spmv_wrapper_->ia  = d_ia;
-    spmv_wrapper_->ja  = d_ja;
-    spmv_wrapper_->a   = d_a;
-    spmv_wrapper_->x   = d_p_;
-    spmv_wrapper_->res = d_omega_;
-
-    float *p1, *p2, *p3;
-    checkCudaErrors(cudaMemcpy(r_, RAW_PTR(d_b), row_ * sizeof(float),
-                               cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy(precond_, RAW_PTR(precond), row_ * sizeof(float),
-                               cudaMemcpyDeviceToHost));
-    p1 = p_, p2 = precond_, p3 = r_;
-    zr_dot_ = 0.0f;
-    for (int i = 0; i < row_; ++i) {
-        *p1 = (*(p2++)) * (*p3);
-        zr_dot_ += (*(p1++)) * (*(p3++));
-    }
-    memset(delta_x_, 0, row_ * sizeof(float));
-    double r_val;
-    int iterCnt = 0;
-    for (int k = 0; k < max_iter; k++) {
-        zr_dot_old_ = zr_dot_;
-        checkCudaErrors(
-            cudaMemcpy(d_p_, p_, row_ * sizeof(float), cudaMemcpyHostToDevice));
-
-        SparseMvKernel<<<row_, 64>>>(*spmv_wrapper_);
-        checkCudaErrors(cudaDeviceSynchronize());
-
-        checkCudaErrors(cudaMemcpy(omega_, d_omega_, row_ * sizeof(float),
-                                   cudaMemcpyDeviceToHost));
-
-        p1 = p_, p2 = omega_;
-        alpha_ = 0.0f;
-        for (int i = 0; i < row_; ++i) {
-            alpha_ += (*(p1++)) * (*(p2++));
-        }
-        alpha_ = zr_dot_ / alpha_;
-
-        p1 = delta_x_, p2 = p_;
-        for (int i = 0; i < row_; ++i) {
-            *(p1++) += alpha_ * (*(p2++));
-        }
-
-        p1 = r_, p2 = omega_;
-        r_val = 0.0;
-        for (int i = 0; i < row_; ++i) {
-            r_val += (*p1) * (*p1);
-            *(p1++) -= alpha_ * (*(p2++));
-        }
-
-        p1 = z_, p2 = precond_, p3 = r_;
-        for (int i = 0; i < row_; ++i) {
-            *(p1) = (*(p2++)) * (*(p3++));
-            ++p1;
-        }
-
-        p1 = r_, p2 = z_;
-        zr_dot_ = 0.0f;
-        for (int i = 0; i < row_; ++i) {
-            zr_dot_ += (*(p1++)) * (*(p2++));
-        }
-
-        beta_ = zr_dot_ / zr_dot_old_;
-        p1 = p_, p2 = z_;
-        for (int i = 0; i < row_; ++i) {
-            *(p1) = (*(p2++)) + beta_ * (*p1);
-            ++p1;
-        }
-        ++iterCnt;
-    }
-    checkCudaErrors(cudaMemcpy(RAW_PTR(d_x), delta_x_, row_ * sizeof(float),
-                               cudaMemcpyHostToDevice));
-}
-
+/**
+ * PcgLinearSolverGPU的构造函数
+ * 用于初始化PCG线性解算器的GPU版本。
+ *
+ * @param row 稀疏矩阵的行数，决定了向量的大小。
+ */
 PcgLinearSolverGPU::PcgLinearSolverGPU(int row)
     : cusparseHandle_(nullptr), descr_(nullptr), row_(row) {
+    // 创建cusparse句柄和矩阵描述符
     cusparseCreate(&cusparseHandle_);
     cusparseCreateMatDescr(&descr_);
+    // 设置矩阵描述符的索引基为0
     cusparseSetMatIndexBase(descr_, CUSPARSE_INDEX_BASE_ZERO);
 
+    // 分配GPU缓冲区，用于存储迭代过程中的临时向量
     d_buf_.resize(row_ * 5);
+    // 从缓冲区中定义向量的起始指针
     d_omega_   = RAW_PTR(d_buf_);
     d_p_       = RAW_PTR(d_buf_) + row_;
     d_r_       = RAW_PTR(d_buf_) + row_ * 2;
     d_z_       = RAW_PTR(d_buf_) + row_ * 3;
     d_delta_x_ = RAW_PTR(d_buf_) + row_ * 4;
 
+    // 分配GPU内存用于存储特定计算（如点乘、内积）的结果
     d_zr_dot_.resize(1);
     d_zr_dot_old_.resize(1);
     d_alpha_.resize(1);
     d_beta_.resize(1);
 
+    // 创建并初始化各种操作器和包装器类的实例，用于执行PCG算法中的各种操作
     dm_wrapper_       = new DotMuliplyWrapper;
     spmv_wrapper_     = new SparseMvWrapper;
     ip_wrapper_       = new InnerProductWrapper;
