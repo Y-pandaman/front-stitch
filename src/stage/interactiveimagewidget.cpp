@@ -1,4 +1,4 @@
-#include "interactiveimagewidget.h"
+#include "stage/interactiveimagewidget.h"
 
 /**
  * 构造函数：InteractiveImageWidget

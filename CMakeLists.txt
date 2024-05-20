@@ -39,11 +39,11 @@ include_directories(
 CUDA_ADD_EXECUTABLE(cylinder_stitcher_example src/main.cpp)
 
 SET(HEADER_FILES
-	include/driveassistant.h
-	include/interactiveimagewidget.h
+	include/stage/driveassistant.h
+	include/stage/interactiveimagewidget.h
 	include/mypainter.h
 	include/common/EcalBladeHeightSender.h
-	include/TextSourceManager.h
+	include/stage/TextSourceManager.h
 	include/Model.h
 	include/BladeModelTransformer.h
 )
@@ -65,15 +65,15 @@ SET(SOURCE_FILES
 	src/project_to_cylinder.cu
 	src/seam_finder.cu
 	src/common/multiband_blend.cu
-	src/render.cu
-	src/driveassistant.cpp
-	src/interactiveimagewidget.cpp
+	src/common/render.cu
+	src/stage/driveassistant.cpp
+	src/stage/interactiveimagewidget.cpp
 	src/mypainter.cpp
 	src/shaders.cpp
 	src/track.cpp
-	src/TextSourceManager.cpp
+	src/stage/TextSourceManager.cpp
 	src/Model.cpp
-	src/ThreadInteractiveWidget.cpp
+	src/stage/ThreadInteractiveWidget.cpp
 	src/BladeModelTransformer.cpp
 	src/Config.cpp
 	src/common/EcalBladeHeightSender.cpp

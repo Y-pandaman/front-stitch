@@ -1,4 +1,4 @@
-#include "ThreadInteractiveWidget.h"
+#include "stage/ThreadInteractiveWidget.h"
 
 /**
  * @brief 启动转向角Ecal接收器

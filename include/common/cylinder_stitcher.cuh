@@ -3,8 +3,8 @@
 //#define OUTPUT_CYL_IMAGE
 
 #include "common/cylinder_stitcher.h"
-#include "util/cuda_utils.h"
 #include "util/math_utils.h"
+#include "util/cuda_utils.h"
 #include <opencv2/opencv.hpp>
 #include <string>
 

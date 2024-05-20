@@ -1,11 +1,7 @@
 #pragma once
 
-#if defined(_WIN32)
-#pragma execution_character_set("utf-8")
-#endif
-
-#include "util/helper_cuda.h"
-#include "util/math_utils.h"
+#include "util/math_utils.h"  // 上
+#include "util/helper_cuda.h" // 下
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 #include <string>

@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
  */
-#include "TextSourceManager.h"
+#include "stage/TextSourceManager.h"
 
 /**
  * 初始化文本源管理器。

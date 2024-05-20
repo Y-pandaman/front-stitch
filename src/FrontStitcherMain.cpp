@@ -1,10 +1,10 @@
 #include "FrontStitcherMain.h"
-#include "ThreadInteractiveWidget.h"
 #include "common/EcalImageSender.h"
 #include "common/GstReceiver.h"
 #include "common/cylinder_stitcher.cuh"
 #include "common/cylinder_stitcher.h"
-#include "interactiveimagewidget.h"
+#include "stage/ThreadInteractiveWidget.h"
+#include "stage/interactiveimagewidget.h"
 #include "util/innoreal_timer.hpp"
 #include <Eigen/Eigen>
 #include <QApplication>

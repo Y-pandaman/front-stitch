@@ -19,20 +19,15 @@ public:
     void SetSrcTargetImgs(float* d_src_img, int src_rows, int src_cols,
                           float* d_target_img, int target_rows, int target_cols,
                           int2 src_min_uv, int2 target_min_uv, int gpu_idx = 0);
-    void SetSrcTargetImgsFromHost(cv::Mat& src_img, cv::Mat& src_mask,
-                                  int2 src_min_uv, cv::Mat& target_img,
-                                  cv::Mat& target_mask, int2 target_min_uv);
+
     void SetSrcTargetImgsFromDevice(uchar3* d_src_img, uchar* d_src_mask,
                                     int src_rows, int src_cols,
                                     uchar3* d_target_img, uchar* d_target_mask,
                                     int target_rows, int target_cols);
     void AlignSrcImgToTarget(int iter_num = 10);
-    void ShowNodeImg(std::vector<std::vector<float2> >& node_vec_vis);
-    void ShowComparisonImg();
     void WarpSrcImg(uchar3* d_warped_src_img, uchar* d_warped_src_mask,
                     uchar3* d_src_img, uchar* d_src_mask, int src_rows,
                     int src_cols);
-    void WarpSrcImg();
 
 public:
     cv::Ptr<cv::cuda::Filter> gauss_filter_;

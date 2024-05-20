@@ -7,7 +7,6 @@
 #include "util/cuda_utils.h"
 #include "util/innoreal_timer.hpp"
 #include "util/math_utils.h"
-// #include "test_JTJ.h"
 #include "x_gn_solver.cuh"
 #include <opencv2/imgproc/types_c.h>
 
@@ -198,60 +197,6 @@ ImageAlignmentCUDA::ImageAlignmentCUDA(int img_rows, int img_cols,
 
 ImageAlignmentCUDA::~ImageAlignmentCUDA() { }
 
-void ImageAlignmentCUDA::ShowNodeImg(
-    std::vector<std::vector<float2>>& node_vec_vis) { }
-
-void ImageAlignmentCUDA::ShowComparisonImg() {
-    cv::Mat img_1, img_2;
-    d_warped_src_gray_img_.download(img_1);
-    d_target_gray_img_.download(img_2);
-
-    cv::Mat diff_image = cv::Mat::zeros(img_rows_, img_cols_, CV_32FC1);
-    for (int row = 0; row < diff_image.rows; ++row) {
-        for (int col = 0; col < diff_image.cols; ++col) {
-            if (img_1.at<float>(row, col) > 2.0)
-                img_1.at<float>(row, col) = 0.0f;
-            if (img_2.at<float>(row, col) > 2.0)
-                img_2.at<float>(row, col) = 0.0f;
-            diff_image.at<float>(row, col) =
-                fabs(img_1.at<float>(row, col) - img_2.at<float>(row, col));
-        }
-    }
-    cv::imshow("diff_image", diff_image * 1);
-    cv::imshow("img_1", img_1 * 1);
-    cv::imshow("img_2", img_2 * 1);
-    cv::waitKey(0);
-}
-
-__global__ void WarpSrcImgKernel(cv::cuda::PtrStep<float> warped_src_img,
-                                 cv::cuda::PtrStepSz<float> src_img,
-                                 cv::cuda::PtrStepSz<float> target_img,
-                                 int pixel_num, int img_rows, int img_cols,
-                                 float2* node_vec, int* pixel_rela_idx_vec,
-                                 float* pixel_rela_weight_vec) {
-    int pixel_idx = threadIdx.x + blockDim.x * blockIdx.x;
-    if (pixel_idx >= pixel_num) {
-        return;
-    }
-
-    int row = pixel_idx / img_cols;
-    int col = pixel_idx % img_cols;
-    int tl  = 4 * pixel_idx;
-    int tr  = 4 * pixel_idx + 1;
-    int bl  = 4 * pixel_idx + 2;
-    int br  = 4 * pixel_idx + 3;
-
-    float2 warped_pixel =
-        pixel_rela_weight_vec[tl] * node_vec[pixel_rela_idx_vec[tl]] +
-        pixel_rela_weight_vec[tr] * node_vec[pixel_rela_idx_vec[tr]] +
-        pixel_rela_weight_vec[bl] * node_vec[pixel_rela_idx_vec[bl]] +
-        pixel_rela_weight_vec[br] * node_vec[pixel_rela_idx_vec[br]];
-
-    float src_rgb =
-        GetPixelValueBilinearDevice(src_img, warped_pixel.x, warped_pixel.y);
-    warped_src_img.ptr(row)[col] = src_rgb;
-}
-
 /**
  * @brief
  * 根据给定的参数，使用卷积的方式将源图像及其掩码映射到一个新的图像及其掩码上。
@@ -349,19 +294,6 @@ __global__ void WarpSrcImgKernel(uchar3* warped_src_img, uchar* warped_src_mask,
     }
 }
 
-void ImageAlignmentCUDA::WarpSrcImg() {
-    /** backward mapping */
-    int pixel_num = img_rows_ * img_cols_;
-    d_warped_src_gray_img_.create(img_rows_, img_cols_, CV_32FC1);
-    int block = 128, grid = (pixel_num + block - 1) / block;
-    WarpSrcImgKernel<<<grid, block>>>(
-        d_warped_src_gray_img_, d_src_gray_img_, d_target_gray_img_, pixel_num,
-        img_rows_, img_cols_, RAW_PTR(d_node_vec_),
-        RAW_PTR(d_pixel_rela_idx_vec_), RAW_PTR(d_pixel_rela_weight_vec_));
-    checkCudaErrors(cudaDeviceSynchronize());
-    checkCudaErrors(cudaGetLastError());
-}
-
 /**
  * 在GPU上运行的内核函数，用于设置图像中指定像素的无效值。
  *
@@ -394,51 +326,6 @@ __global__ void SetInvalidValuesKernel(float* img_float, uchar3* img_uchar3,
         // 如果像素未被选中，设置为特定的无效值
         img_float[pixel_idx] = 65535.0f;
     }
-}
-
-void ImageAlignmentCUDA::SetSrcTargetImgsFromHost(
-    cv::Mat& src_img, cv::Mat& src_mask, int2 src_min_uv, cv::Mat& target_img,
-    cv::Mat& target_mask, int2 target_min_uv) {
-    int src_pixel_num    = src_img.rows * src_img.cols;
-    int target_pixel_num = target_img.rows * target_img.cols;
-
-    uchar3 *d_src_img, *d_target_img;
-    uchar *d_src_mask, *d_target_mask;
-    checkCudaErrors(cudaMalloc(&d_src_img, src_pixel_num * sizeof(uchar3)));
-    checkCudaErrors(
-        cudaMalloc(&d_target_img, target_pixel_num * sizeof(uchar3)));
-    checkCudaErrors(cudaMalloc(&d_src_mask, src_pixel_num * sizeof(uchar)));
-    checkCudaErrors(
-        cudaMalloc(&d_target_mask, target_pixel_num * sizeof(uchar)));
-    checkCudaErrors(cudaMemcpy(d_src_img, src_img.data,
-                               src_pixel_num * sizeof(uchar3),
-                               cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_target_img, target_img.data,
-                               target_pixel_num * sizeof(uchar3),
-                               cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_src_mask, src_mask.data,
-                               src_pixel_num * sizeof(uchar),
-                               cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_target_mask, target_mask.data,
-                               target_pixel_num * sizeof(uchar),
-                               cudaMemcpyHostToDevice));
-
-    float *src_temp_vec, *target_temp_vec;
-    checkCudaErrors(cudaMalloc(&src_temp_vec, src_pixel_num * sizeof(float)));
-    checkCudaErrors(
-        cudaMalloc(&target_temp_vec, target_pixel_num * sizeof(float)));
-
-    int block = 128, grid = (src_pixel_num + block - 1) / block;
-    SetInvalidValuesKernel<<<grid, block>>>(src_temp_vec, (uchar3*)d_src_img,
-                                            d_src_mask, src_pixel_num);
-    grid = (target_pixel_num + block - 1) / block;
-    SetInvalidValuesKernel<<<grid, block>>>(target_temp_vec,
-                                            (uchar3*)d_target_img,
-                                            d_target_mask, target_pixel_num);
-
-    SetSrcTargetImgs(src_temp_vec, src_img.rows, src_img.cols, target_temp_vec,
-                     target_img.rows, target_img.cols, src_min_uv,
-                     target_min_uv);
 }
 
 /**

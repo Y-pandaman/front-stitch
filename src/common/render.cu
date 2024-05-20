@@ -1,4 +1,4 @@
-#include "render.cuh"
+#include "common/render.cuh"
 #include "util/cuda_utils.h"
 
 /**

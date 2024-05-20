@@ -3,7 +3,7 @@
 #include "common/multiband_blend.cuh"
 #include "image_alignment_gpu.cuh"
 #include "project_to_cylinder.cuh"
-#include "render.cuh"
+#include "common/render.cuh"
 #include "seam_finder.cuh"
 #include "util/cuda_utils.h"
 #include "util/innoreal_timer.hpp"

@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-16 20:54:00
+ * @LastEditTime: 2024-05-20 15:51:25
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -14,7 +14,7 @@
 #ifndef DRAW_TRACK_TRACK_H
 #define DRAW_TRACK_TRACK_H
 
-#include "TextSourceManager.h"
+#include "stage/TextSourceManager.h"
 #include <Eigen/Eigen>
 #include <QPoint>
 #include <iostream>

@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-16 16:38:20
+ * @LastEditTime: 2024-05-20 15:52:02
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -11,10 +11,9 @@
 #define MYPAINTER_H
 
 #include "Model.h"
-#include "TagPosesSet.h"
-#include "TextSourceManager.h"
-#include "driveassistant.h"
 #include "shaders.h"
+#include "stage/TextSourceManager.h"
+#include "stage/driveassistant.h"
 #include "util/math_utils.h"
 #include <QCoreApplication>
 #include <QMatrix4x4>
