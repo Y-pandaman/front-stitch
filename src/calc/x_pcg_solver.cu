@@ -1,6 +1,6 @@
+#include "calc/x_pcg_solver.cuh"
 #include "util/cuda_utils.h"
 #include "util/helper_cuda.h"
-#include "render/x_pcg_solver.cuh"
 #include <thrust/device_ptr.h>
 #include <thrust/inner_product.h>
 #include <thrust/transform.h>

@@ -439,222 +439,134 @@ static void GetBoundary(cv::Mat& mask, std::vector<int2>& boundary_loc) {
     }
 }
 
-static bool RayCylinderIntersection(Eigen::Matrix<float, 3, 1> origin,
-                                    Eigen::Matrix<float, 3, 1> dir, float r,
-                                    Eigen::Matrix<float, 3, 1>& intersection) {
-    if (origin.norm() > r) {
-        std::cout << "Outside the cylinder" << std::endl;
-        return false;
-    }
+// static bool RayCylinderIntersection(Eigen::Matrix<float, 3, 1> origin,
+//                                     Eigen::Matrix<float, 3, 1> dir, float r,
+//                                     Eigen::Matrix<float, 3, 1>& intersection) {
+//     if (origin.norm() > r) {
+//         std::cout << "Outside the cylinder" << std::endl;
+//         return false;
+//     }
 
-    float k, b;
-    float intersect_x, intersect_z;
+//     float k, b;
+//     float intersect_x, intersect_z;
 
-    if (dir(0, 0) == 0 && dir(0, 0) == 0)
-        return false;
+//     if (dir(0, 0) == 0 && dir(0, 0) == 0)
+//         return false;
 
-    if (std::fabs(dir(0, 0)) < 1.0e-6) {
-        intersect_x = origin(0, 0);
-        float z1    = std::sqrt(r * r - intersect_x * intersect_x);
-        float z2    = -z1;
+//     if (std::fabs(dir(0, 0)) < 1.0e-6) {
+//         intersect_x = origin(0, 0);
+//         float z1    = std::sqrt(r * r - intersect_x * intersect_x);
+//         float z2    = -z1;
 
-        if ((z1 - origin(2, 0)) / dir(2, 0) > 0) {
-            intersect_z = z1;
-        } else {
-            intersect_z = z2;
-        }
-    } else if (std::fabs(dir(2, 0)) < 1.0e-6) {
-        intersect_z = origin(2, 0);
-        float x1    = std::sqrt(r * r - intersect_z * intersect_z);
-        float x2    = -x1;
+//         if ((z1 - origin(2, 0)) / dir(2, 0) > 0) {
+//             intersect_z = z1;
+//         } else {
+//             intersect_z = z2;
+//         }
+//     } else if (std::fabs(dir(2, 0)) < 1.0e-6) {
+//         intersect_z = origin(2, 0);
+//         float x1    = std::sqrt(r * r - intersect_z * intersect_z);
+//         float x2    = -x1;
 
-        if ((x1 - origin(0, 0)) / dir(0, 0) > 0) {
-            intersect_x = x1;
-        } else {
-            intersect_x = x2;
-        }
-    } else {
-        k = dir(2, 0) / dir(0, 0);
-        b = origin(2, 0) - k * origin(0, 0);
-        float check =
-            std::pow(2 * k * b, 2.0f) - 4 * (1 + k * k) * (b * b - r * r);
-        if (check < 0)
-            return false;
-        float item = std::sqrt(check);
+//         if ((x1 - origin(0, 0)) / dir(0, 0) > 0) {
+//             intersect_x = x1;
+//         } else {
+//             intersect_x = x2;
+//         }
+//     } else {
+//         k = dir(2, 0) / dir(0, 0);
+//         b = origin(2, 0) - k * origin(0, 0);
+//         float check =
+//             std::pow(2 * k * b, 2.0f) - 4 * (1 + k * k) * (b * b - r * r);
+//         if (check < 0)
+//             return false;
+//         float item = std::sqrt(check);
 
-        float x1 = (-2.0f * k * b + item) / (2 * (1 + k * k));
-        float x2 = (-2.0f * k * b - item) / (2 * (1 + k * k));
+//         float x1 = (-2.0f * k * b + item) / (2 * (1 + k * k));
+//         float x2 = (-2.0f * k * b - item) / (2 * (1 + k * k));
 
-        float z1 = k * x1 + b;
-        float z2 = k * x2 + b;
+//         float z1 = k * x1 + b;
+//         float z2 = k * x2 + b;
 
-        if ((x1 - origin(0, 0)) / dir(0, 0) > 0 &&
-            (z1 - origin(2, 0)) / dir(2, 0) > 0) {
-            intersect_x = x1;
-            intersect_z = z1;
-        } else {
-            intersect_x = x2;
-            intersect_z = z2;
-        }
-    }
+//         if ((x1 - origin(0, 0)) / dir(0, 0) > 0 &&
+//             (z1 - origin(2, 0)) / dir(2, 0) > 0) {
+//             intersect_x = x1;
+//             intersect_z = z1;
+//         } else {
+//             intersect_x = x2;
+//             intersect_z = z2;
+//         }
+//     }
 
-    float t_xz = std::sqrt(std::pow(intersect_x - origin(0, 0), 2.0f) +
-                           std::pow(intersect_z - origin(2, 0), 2.0f));
-    float tan_theta =
-        dir(1, 0) / std::sqrt(dir(0, 0) * dir(0, 0) + dir(2, 0) * dir(2, 0));
+//     float t_xz = std::sqrt(std::pow(intersect_x - origin(0, 0), 2.0f) +
+//                            std::pow(intersect_z - origin(2, 0), 2.0f));
+//     float tan_theta =
+//         dir(1, 0) / std::sqrt(dir(0, 0) * dir(0, 0) + dir(2, 0) * dir(2, 0));
 
-    float t_y         = t_xz * tan_theta;
-    float intersect_y = origin(1, 0) + t_y;
+//     float t_y         = t_xz * tan_theta;
+//     float intersect_y = origin(1, 0) + t_y;
 
-    intersection << intersect_x, intersect_y, intersect_z;
+//     intersection << intersect_x, intersect_y, intersect_z;
 
-    return true;
-}
+//     return true;
+// }
 
-static bool BackProj(float theta, float phi, float& x, float& y,
-                     PinholeCamera* cam, Cylinder* cyl) {
-    Eigen::Matrix<float, 3, 1> P;
-    P << cyl->r * std::sin(theta), phi * cyl->r, cyl->r * std::cos(theta);
+// static bool BackProj(float theta, float phi, float& x, float& y,
+//                      PinholeCamera* cam, Cylinder* cyl) {
+//     Eigen::Matrix<float, 3, 1> P;
+//     P << cyl->r * std::sin(theta), phi * cyl->r, cyl->r * std::cos(theta);
 
-    Eigen::Matrix<float, 3, 1> target_pixel =
-        cam->K * cam->R *
-        (cyl->rotation.transpose() * P + cyl->center - cam->C);
-    if (target_pixel(2, 0) <= 0)
-        return false;
+//     Eigen::Matrix<float, 3, 1> target_pixel =
+//         cam->K * cam->R *
+//         (cyl->rotation.transpose() * P + cyl->center - cam->C);
+//     if (target_pixel(2, 0) <= 0)
+//         return false;
 
-    x = target_pixel(0, 0) / target_pixel(2, 0);
-    y = target_pixel(1, 0) / target_pixel(2, 0);
-    return true;
-}
+//     x = target_pixel(0, 0) / target_pixel(2, 0);
+//     y = target_pixel(1, 0) / target_pixel(2, 0);
+//     return true;
+// }
 
-static bool ForwardProjToCylinder(int x, int y, float& theta, float& phi,
-                                  PinholeCamera* cam, Cylinder* cyl) {
-    Eigen::Matrix<float, 3, 1> P;
-    Ray ray = cam->getRay(x, y);
-    Eigen::Matrix<float, 3, 1> ray_o =
-        cyl->rotation * (ray.origin - cyl->center);
-    Eigen::Matrix<float, 3, 1> ray_dir = cyl->rotation * ray.dir;
-    bool success = RayCylinderIntersection(ray_o, ray_dir, cyl->r, P);
+// static bool ForwardProjToCylinder(int x, int y, float& theta, float& phi,
+//                                   PinholeCamera* cam, Cylinder* cyl) {
+//     Eigen::Matrix<float, 3, 1> P;
+//     Ray ray = cam->getRay(x, y);
+//     Eigen::Matrix<float, 3, 1> ray_o =
+//         cyl->rotation * (ray.origin - cyl->center);
+//     Eigen::Matrix<float, 3, 1> ray_dir = cyl->rotation * ray.dir;
+//     bool success = RayCylinderIntersection(ray_o, ray_dir, cyl->r, P);
 
-    if (!success) {
-        std::cout << "Ray Cylinder intersect failed! " << std::endl;
-        return false;
-    }
+//     if (!success) {
+//         std::cout << "Ray Cylinder intersect failed! " << std::endl;
+//         return false;
+//     }
 
-    theta = clamp(atan2f(P(0, 0), P(2, 0)), -3.141592653 / 2 + 0.001,
-                  3.141592653 / 2 - 0.001);
-    phi   = P(1, 0) / cyl->r;
+//     theta = clamp(atan2f(P(0, 0), P(2, 0)), -3.141592653 / 2 + 0.001,
+//                   3.141592653 / 2 - 0.001);
+//     phi   = P(1, 0) / cyl->r;
 
-    return true;
-}
+//     return true;
+// }
 
-bool Merge(float2& merged_tl, float2& merged_rb, float2 tl_i, float2 rb_i,
-           float2 tl_j, float2 rb_j) {
-    if ((tl_i.x > tl_j.x && tl_i.x < rb_j.x && tl_i.y > tl_j.y &&
-         tl_i.y < rb_j.y) ||
-        (rb_i.x > tl_j.x && rb_i.x < rb_j.x && rb_i.y > tl_j.y &&
-         rb_i.y < rb_j.y) ||
-        (tl_j.x > tl_i.x && tl_j.x < rb_i.x && tl_j.y > tl_i.y &&
-         tl_j.y < rb_i.y) ||
-        (rb_j.x > tl_i.x && rb_j.x < rb_i.x && rb_j.y > tl_i.y &&
-         rb_j.y < rb_i.y)) {
-        merged_tl.x = min(tl_i.x, tl_j.x);
-        merged_tl.y = min(tl_i.y, tl_j.y);
-        merged_rb.x = min(rb_i.x, rb_j.x);
-        merged_rb.y = min(rb_i.y, rb_j.y);
+// bool Merge(float2& merged_tl, float2& merged_rb, float2 tl_i, float2 rb_i,
+//            float2 tl_j, float2 rb_j) {
+//     if ((tl_i.x > tl_j.x && tl_i.x < rb_j.x && tl_i.y > tl_j.y &&
+//          tl_i.y < rb_j.y) ||
+//         (rb_i.x > tl_j.x && rb_i.x < rb_j.x && rb_i.y > tl_j.y &&
+//          rb_i.y < rb_j.y) ||
+//         (tl_j.x > tl_i.x && tl_j.x < rb_i.x && tl_j.y > tl_i.y &&
+//          tl_j.y < rb_i.y) ||
+//         (rb_j.x > tl_i.x && rb_j.x < rb_i.x && rb_j.y > tl_i.y &&
+//          rb_j.y < rb_i.y)) {
+//         merged_tl.x = min(tl_i.x, tl_j.x);
+//         merged_tl.y = min(tl_i.y, tl_j.y);
+//         merged_rb.x = min(rb_i.x, rb_j.x);
+//         merged_rb.y = min(rb_i.y, rb_j.y);
 
-        return true;
-    }
-    return false;
-}
-
-void CylinderStitcherGPU::drawBoundingBoxes(cv::Mat& image,
-                                            std::vector<float2>& boxes) {
-    int width  = cyl_images_[cyl_images_.size() / 2].width;
-    int height = cyl_images_[cyl_images_.size() / 2].height;
-    image      = cv::Mat::zeros(height, width, CV_8UC3);
-    for (int i = 0; i < boxes.size() / 2; ++i) {
-        float2 tl = boxes[2 * i];
-        float2 rb = boxes[2 * i + 1];
-        cv::Rect2f rec(tl.x, tl.y, rb.x - tl.x, rb.y - tl.y);
-        cv::rectangle(image, rec, cv::Scalar(0, 0, 255), -1);
-    }
-}
-
-void CylinderStitcherGPU::drawBoundingBoxes_2(cv::Mat& image,
-                                              std::vector<float2>& boxes) {
-    int width  = cyl_images_[cyl_images_.size() / 2].width;
-    int height = cyl_images_[cyl_images_.size() / 2].height;
-    image      = cv::Mat::zeros(height, width, CV_8UC3);
-    for (int i = 0; i < boxes.size() / 2; ++i) {
-        float2 tl = boxes[2 * i];
-        float2 rb = boxes[2 * i + 1];
-    }
-    {
-        float global_min_theta, global_max_theta, global_min_phi,
-            global_max_phi;
-        cudaMemcpy(&global_min_theta, cyl_->global_theta, sizeof(float),
-                   cudaMemcpyDeviceToHost);
-        cudaMemcpy(&global_max_theta, cyl_->global_theta + 1, sizeof(float),
-                   cudaMemcpyDeviceToHost);
-        cudaMemcpy(&global_min_phi, cyl_->global_phi, sizeof(float),
-                   cudaMemcpyDeviceToHost);
-        cudaMemcpy(&global_max_phi, cyl_->global_phi + 1, sizeof(float),
-                   cudaMemcpyDeviceToHost);
-
-        int width    = cyl_images_[cyl_images_.size() / 2].width;
-        int height   = cyl_images_[cyl_images_.size() / 2].height;
-        float step_x = ((global_max_theta) - (global_min_theta)) / width;
-        float step_y = ((global_max_phi) - (global_min_phi)) / height;
-
-        std::vector<float> rotation(9);
-        cudaMemcpy(rotation.data(), cyl_->rotation, sizeof(float) * 9,
-                   cudaMemcpyDeviceToHost);
-        h_cyl_.rotation << rotation[0], rotation[1], rotation[2], rotation[3],
-            rotation[4], rotation[5], rotation[6], rotation[7], rotation[8];
-
-        std::vector<float> center(3);
-        cudaMemcpy(center.data(), cyl_->center, sizeof(float) * 3,
-                   cudaMemcpyDeviceToHost);
-        h_cyl_.center << center[0], center[1], center[2];
-        h_cyl_.r = cyl_->r;
-
-        std::vector<float> R_vec(9), T_vec(3), C_vec(3);
-        cudaMemcpy(R_vec.data(), extra_view_.camera.R, sizeof(float) * 9,
-                   cudaMemcpyDeviceToHost);
-        cudaMemcpy(T_vec.data(), extra_view_.camera.T, sizeof(float) * 3,
-                   cudaMemcpyDeviceToHost);
-        cudaMemcpy(C_vec.data(), extra_view_.camera.C, sizeof(float) * 3,
-                   cudaMemcpyDeviceToHost);
-
-        PinholeCamera camera;
-        camera.K << extra_view_.camera.fx, 0, extra_view_.camera.cx, 0,
-            extra_view_.camera.fy, extra_view_.camera.cy, 0, 0, 1;
-        camera.R << R_vec[0], R_vec[1], R_vec[2], R_vec[3], R_vec[4], R_vec[5],
-            R_vec[6], R_vec[7], R_vec[8];
-        camera.T << T_vec[0], T_vec[1], T_vec[2];
-        camera.C << C_vec[0], C_vec[1], C_vec[2];
-
-        for (int box_idx = 0; box_idx < boxes.size() / 2; ++box_idx) {
-            float2& tl = boxes[2 * box_idx];
-            float2& rb = boxes[2 * box_idx + 1];
-            float theta, phi;
-            float2 tl_xy, rb_xy;
-            phi = tl.y * step_y + global_min_phi;
-            ;
-            theta = tl.x * step_x + global_min_theta;
-            BackProj(theta, phi, tl_xy.x, tl_xy.y, &camera, &h_cyl_);
-            phi = rb.y * step_y + global_min_phi;
-            ;
-            theta = rb.x * step_x + global_min_theta;
-            BackProj(theta, phi, rb_xy.x, rb_xy.y, &camera, &h_cyl_);
-
-            cv::Rect2f rec(tl_xy.x, tl_xy.y, rb_xy.x - tl_xy.x,
-                           rb_xy.y - tl_xy.y);
-            cv::rectangle(image, rec, cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
-        }
-    }
-}
+//         return true;
+//     }
+//     return false;
+// }
 
 /**
  * 将当前视图投影到圆柱形图像上

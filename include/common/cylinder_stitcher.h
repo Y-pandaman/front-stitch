@@ -161,7 +161,6 @@ struct CylinderImage {
 
 class CylinderStitcher {
 public:
-    //  Cylinder calCylinder(std::vector<PinholeCamera> cameras) {}
     std::vector<std::vector<float4> >
     findCorrespondences(std::vector<View> views);
 
@@ -174,8 +173,6 @@ public:
     void alignImagesGPU(std::vector<CylinderImage>& cylinder_images,
                         std::vector<std::vector<float4> > match_corrs);
 
-    //  std::vector<cv::Mat> projToScreen(std::vector<CylinderImage>
-    //  cylinder_images, std::vector<PinholeCamera> cameras) {}
     void show(CylinderImage cyl_image, std::vector<View> views,
               Cylinder cylinder);
 

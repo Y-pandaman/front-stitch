@@ -1,4 +1,4 @@
-#include "render/reduce.cuh"
+#include "calc/reduce.cuh"
 #include "util/cuda_utils.h"
 #include "util/helper_cuda.h"
 #include "util/math_utils.h"

@@ -57,11 +57,11 @@ SET(SOURCE_FILES
 	src/util/loguru.cpp
 	src/common/cylinder_stitcher.cu
 	src/render/image_alignment_gpu.cu
-	src/render/nz_block_statistics.cu
-	src/render/x_gn_solver.cu
-	src/render/constraint_terms.cu
-	src/render/reduce.cu
-	src/render/x_pcg_solver.cu
+	src/calc/nz_block_statistics.cu
+	src/calc/x_gn_solver.cu
+	src/calc/constraint_terms.cu
+	src/calc/reduce.cu
+	src/calc/x_pcg_solver.cu
 	src/render/project_to_cylinder.cu
 	src/render/seam_finder.cu
 	src/common/multiband_blend.cu

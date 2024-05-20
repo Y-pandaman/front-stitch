@@ -1,4 +1,4 @@
-#include "render/nz_block_statistics.cuh"
+#include "calc/nz_block_statistics.cuh"
 #include "util/cuda_utils.h"
 #include "util/innoreal_timer.hpp"
 #include <device_launch_parameters.h>

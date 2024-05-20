@@ -420,34 +420,6 @@ bool proj4ChannelsExtraViewToCylinderImage_cuda(
     return true;
 }
 
-// bool projExtraViewToCylinderImage_cuda(ViewGPU extra_view,
-//                                        CylinderImageGPU& extra_cyl_image,
-//                                        CylinderGPU& cylinder,
-//                                        int cyl_image_width,
-//                                        int cyl_image_height) {
-//     int height = extra_view.height, width = extra_view.width;
-//     int size_c     = cylinder.offset[3];
-//     int num_thread = 512;
-//     int num_block  = min(65535, (size_c + num_thread - 1) / num_thread);
-//     int num_block2 =
-//         min(65535,
-//             (cyl_image_width * cyl_image_height + num_thread - 1) /
-//             num_thread);
-
-//     BackProjToSrc_kernel<<<num_block2, num_thread>>>(
-//         extra_view.image, extra_view.mask, extra_view.height,
-//         extra_view.width, cylinder, extra_view.camera, extra_cyl_image.image,
-//         extra_cyl_image.mask, extra_cyl_image.uv, cylinder.global_theta,
-//         cylinder.global_phi, cylinder.global_theta + 1, cylinder.global_phi +
-//         1, cylinder.global_theta, cylinder.global_phi, cyl_image_height,
-//         cyl_image_width, false);
-
-//     checkCudaErrors(cudaDeviceSynchronize());
-//     checkCudaErrors(cudaGetLastError());
-
-//     return true;
-// }
-
 /**
  * 将多个视图的图像数据投影到一个圆柱体图像上。
  *
@@ -499,26 +471,3 @@ bool projToCylinderImage_cuda(std::vector<ViewGPU> views,
     return true;
 }
 
-// __global__ void
-// ForwardProjToCylinder_kernel(float2* cylinder_coor,   // theta phi
-//                              CylinderGPU cyl, PinholeCameraGPU cam, int
-//                              height, int width) {
-//     int pixelIdx     = threadIdx.x + blockIdx.x * blockDim.x;
-//     int total_thread = blockDim.x * gridDim.x;
-//     int totalPixel   = height * width;
-//     while (pixelIdx < totalPixel) {
-//         int x = pixelIdx % width;
-//         int y = pixelIdx / width;
-
-//         float3 dir    = cyl.rotateVector(cam.getRay(x, y));
-//         float3 origin = cyl.rotateVector(cam.getCenter() - cyl.getCenter());
-
-//         float3 P;
-//         RayCylinderIntersection(origin, dir, cyl.r, P);
-
-//         cylinder_coor[pixelIdx].x = atanf(P.x / P.z);
-//         cylinder_coor[pixelIdx].y = P.y / cyl.r;
-
-//         pixelIdx += total_thread;
-//     }
-// }
