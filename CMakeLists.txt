@@ -42,7 +42,7 @@ SET(HEADER_FILES
 	include/driveassistant.h
 	include/interactiveimagewidget.h
 	include/mypainter.h
-	include/EcalBladeHeightSender.h
+	include/common/EcalBladeHeightSender.h
 	include/TextSourceManager.h
 	include/Model.h
 	include/BladeModelTransformer.h
@@ -50,12 +50,12 @@ SET(HEADER_FILES
 
 SET(SOURCE_FILES
 	src/FrontStitcherMain.cpp
-	src/EcalImageSender.cpp
-	src/GstReceiver.cpp
-	src/yolo.cpp
-	src/yolo_detect.cpp
-	src/loguru.cpp
-	src/cylinder_stitcher.cu
+	src/common/EcalImageSender.cpp
+	src/common/GstReceiver.cpp
+	src/yolo/yolo.cpp
+	src/yolo/yolo_detect.cpp
+	src/util/loguru.cpp
+	src/common/cylinder_stitcher.cu
 	src/image_alignment_gpu.cu
 	src/nz_block_statistics.cu
 	src/x_gn_solver.cu
@@ -64,7 +64,7 @@ SET(SOURCE_FILES
 	src/x_pcg_solver.cu
 	src/project_to_cylinder.cu
 	src/seam_finder.cu
-	src/multiband_blend.cu
+	src/common/multiband_blend.cu
 	src/render.cu
 	src/driveassistant.cpp
 	src/interactiveimagewidget.cpp
@@ -76,7 +76,7 @@ SET(SOURCE_FILES
 	src/ThreadInteractiveWidget.cpp
 	src/BladeModelTransformer.cpp
 	src/Config.cpp
-	src/EcalBladeHeightSender.cpp
+	src/common/EcalBladeHeightSender.cpp
 )
 
 CUDA_ADD_LIBRARY(front_stitcher_main SHARED

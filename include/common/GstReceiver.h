@@ -11,7 +11,7 @@
 #ifndef CYLINDER_STITCHER_GSTRECEIVER_H
 #define CYLINDER_STITCHER_GSTRECEIVER_H
 
-#include "EcalImageSender.h"
+#include "common/EcalImageSender.h"
 #include <atomic>
 #include <condition_variable>
 #include <mutex>

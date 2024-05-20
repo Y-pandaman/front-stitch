@@ -1,5 +1,5 @@
-#include "cuda_utils.h"
 #include "render.cuh"
+#include "util/cuda_utils.h"
 
 /**
  * 计算射线与圆柱体的交点。
@@ -359,9 +359,11 @@ __global__ void render_kernel(float4* intrin, float4* center_view_intrin,
 //                                           uchar3* src_cyl_img, int width,
 //                                           int height, float w) {
 //     int num_thread = 512;
-//     int num_block  = min(65535, (height * width + num_thread - 1) / num_thread);
+//     int num_block  = min(65535, (height * width + num_thread - 1) /
+//     num_thread);
 
-//     blend_extra_view_kernel<<<num_block, num_thread>>>(dst_cyl_img, src_cyl_img,
+//     blend_extra_view_kernel<<<num_block, num_thread>>>(dst_cyl_img,
+//     src_cyl_img,
 //                                                        width, height, w);
 //     checkCudaErrors(cudaDeviceSynchronize());
 //     checkCudaErrors(cudaGetLastError());

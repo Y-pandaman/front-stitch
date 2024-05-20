@@ -1,8 +1,8 @@
 #ifndef __PROJECT__
 #define __PROJECT__
 
+#include "common/cylinder_stitcher.cuh"
 #include "cuda_runtime.h"
-#include "cylinder_stitcher.cuh"
 #include <cuda.h>
 #include <iostream>
 #include <thrust/device_vector.h>

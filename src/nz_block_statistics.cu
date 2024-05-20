@@ -1,6 +1,6 @@
-#include "cuda_utils.h"
-#include "innoreal_timer.hpp"
 #include "nz_block_statistics.cuh"
+#include "util/cuda_utils.h"
+#include "util/innoreal_timer.hpp"
 #include <device_launch_parameters.h>
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
@@ -566,9 +566,10 @@ void NzBlockStatisticsForJTJ::CalcNzBlocksAndFunctions(
     calc_pixel_idx_num_wrapper.function_idx_vec = RAW_PTR(d_function_idx_vec_);
     calc_pixel_idx_num_wrapper.offset_vec       = RAW_PTR(d_offset_vec_);
     block = 32 * 4, grid = nz_block_num_;   // 每个block包含128个线程，4个warp
-        /**
+    /**
      * 计算每个非零块对应的像素索引数量
-     * 使用CUDA Kernel调用calc_pixel_idx_num_wrapper函数，计算非零块中的像素索引数量。
+     * 使用CUDA
+     * Kernel调用calc_pixel_idx_num_wrapper函数，计算非零块中的像素索引数量。
      */
     CalcPixelIdxNumForEachNzBlockKernel<<<grid, block>>>(
         calc_pixel_idx_num_wrapper);
@@ -578,7 +579,8 @@ void NzBlockStatisticsForJTJ::CalcNzBlocksAndFunctions(
     /**
      * 将稀疏矩阵的非零块信息转换为CSR格式
      * 首先创建一个布尔类型的设备向量d_nz_flag，用于标记矩阵中非零元素的位置。
-     * 然后通过SetNzFlagKernel kernel调用set_nz_flag_wrapper函数，将非零块的位置标记在d_nz_flag中。
+     * 然后通过SetNzFlagKernel
+     * kernel调用set_nz_flag_wrapper函数，将非零块的位置标记在d_nz_flag中。
      */
     thrust::device_vector<bool> d_nz_flag(node_num * node_num, false);
     // 创建一个NxN的标志位矩阵，非零块的位置标记为1

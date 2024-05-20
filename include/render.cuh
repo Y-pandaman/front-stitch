@@ -1,8 +1,8 @@
 #ifndef __RENDER__
 #define __RENDER__
 
+#include "common/cylinder_stitcher.cuh"
 #include "cuda_runtime.h"
-#include "cylinder_stitcher.cuh"
 #include "project_to_cylinder.cuh"
 #include <cuda.h>
 #include <iostream>
@@ -21,10 +21,10 @@ static inline __device__ void get_intrinsic(float& fx, float& fy, float& cx,
 
 /**
  * @brief 使用给定的逆矩阵旋转向量
- * 
+ *
  * 通过矩阵乘法，使用给定的三个向量（X轴，Y轴，Z轴）作为矩阵的列，对输入的向量v进行旋转。
  * 这个函数假设这三个向量是构成一个正交矩阵的列，且它们已经归一化。
- * 
+ *
  * @param X_axis X轴向量，作为矩阵的的第一列
  * @param Y_axis Y轴向量，作为矩阵的的第二列
  * @param Z_axis Z轴向量，作为矩阵的的第三列

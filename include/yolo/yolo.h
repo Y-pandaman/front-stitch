@@ -1,5 +1,14 @@
+/*
+ * @Author: 姚潘涛
+ * @Date: 2024-05-20 11:35:23
+ * @LastEditors: 姚潘涛
+ * @LastEditTime: 2024-05-20 15:00:20
+ * @Description:
+ *
+ * Copyright (c) 2024 by pandaman, All Rights Reserved.
+ */
 #pragma once
-#include "loguru.hpp"
+#include "util/loguru.hpp"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -28,7 +37,7 @@ private:
                                     {140, 301, 303, 264, 238, 542},
                                     {436, 615, 739, 380, 925, 792}};
 
-    const int netWidth = 1280;    // ONNX图片输入宽度
+    const int netWidth  = 1280;   // ONNX图片输入宽度
     const int netHeight = 1280;   // ONNX图片输入高度
 
     const int strideSize = 4;   // stride size
@@ -37,7 +46,7 @@ private:
                                     {30, 61, 62, 45, 59, 119},
                                     {116, 90, 156, 198, 373, 326}};
 
-    const int netWidth = 640;    // ONNX图片输入宽度
+    const int netWidth  = 640;   // ONNX图片输入宽度
     const int netHeight = 640;   // ONNX图片输入高度
 
     const int strideSize = 3;   // stride size

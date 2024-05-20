@@ -1,7 +1,16 @@
+/*
+ * @Author: 姚潘涛
+ * @Date: 2024-05-20 11:35:23
+ * @LastEditors: 姚潘涛
+ * @LastEditTime: 2024-05-20 15:13:18
+ * @Description:
+ *
+ * Copyright (c) 2024 by pandaman, All Rights Reserved.
+ */
 #pragma once
 
-#include "loguru.hpp"
-#include "yolo.h"
+#include "util/loguru.hpp"
+#include "yolo/yolo.h"
 #include <cmath>
 #include <iostream>
 #include <opencv2/opencv.hpp>

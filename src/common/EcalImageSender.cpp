@@ -11,7 +11,7 @@
 // Created by touch on 22-11-29.
 //
 
-#include "EcalImageSender.h"
+#include "common/EcalImageSender.h"
 
 EcalImageSender::EcalImageSender(int argc, char** argv) { }
 

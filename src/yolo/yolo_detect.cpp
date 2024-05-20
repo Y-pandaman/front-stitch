@@ -2,12 +2,12 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-09 18:53:53
+ * @LastEditTime: 2024-05-20 15:13:30
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
  */
-#include "yolo_detect.h"
+#include "yolo/yolo_detect.h"
 
 namespace yolo_detect {
 YoloDetect::YoloDetect(std::string model_path, bool use_CUDA) {

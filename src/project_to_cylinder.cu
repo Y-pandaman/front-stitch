@@ -1,5 +1,5 @@
-#include "cuda_utils.h"
 #include "project_to_cylinder.cuh"
+#include "util/cuda_utils.h"
 #include <thrust/extrema.h>
 
 /**
@@ -379,7 +379,8 @@ BackProjToSrc_kernel(uchar3* src_color, uchar* mask, int src_h, int src_w,
     }
 }
 
-// static inline __device__ bool RayCylinderIntersection(float3 origin, float3 dir,
+// static inline __device__ bool RayCylinderIntersection(float3 origin, float3
+// dir,
 //                                                       float r,
 //                                                       float3& intersection) {
 //     float3 abs_dir = fabs(dir);
@@ -431,7 +432,8 @@ BackProjToSrc_kernel(uchar3* src_color, uchar* mask, int src_h, int src_w,
 //     intersection.y = origin.y + t_xz * tan_theta;
 // }
 
-// __global__ void GetBoundingBox_kernel(float* theta, float* phi, CylinderGPU cyl,
+// __global__ void GetBoundingBox_kernel(float* theta, float* phi, CylinderGPU
+// cyl,
 //                                       PinholeCameraGPU cam0,
 //                                       PinholeCameraGPU cam1,
 //                                       PinholeCameraGPU cam2, int height,
@@ -560,14 +562,15 @@ bool proj4ChannelsExtraViewToCylinderImage_cuda(
 //     int num_block  = min(65535, (size_c + num_thread - 1) / num_thread);
 //     int num_block2 =
 //         min(65535,
-//             (cyl_image_width * cyl_image_height + num_thread - 1) / num_thread);
+//             (cyl_image_width * cyl_image_height + num_thread - 1) /
+//             num_thread);
 
 //     BackProjToSrc_kernel<<<num_block2, num_thread>>>(
-//         extra_view.image, extra_view.mask, extra_view.height, extra_view.width,
-//         cylinder, extra_view.camera, extra_cyl_image.image,
+//         extra_view.image, extra_view.mask, extra_view.height,
+//         extra_view.width, cylinder, extra_view.camera, extra_cyl_image.image,
 //         extra_cyl_image.mask, extra_cyl_image.uv, cylinder.global_theta,
-//         cylinder.global_phi, cylinder.global_theta + 1, cylinder.global_phi + 1,
-//         cylinder.global_theta, cylinder.global_phi, cyl_image_height,
+//         cylinder.global_phi, cylinder.global_theta + 1, cylinder.global_phi +
+//         1, cylinder.global_theta, cylinder.global_phi, cyl_image_height,
 //         cyl_image_width, false);
 
 //     checkCudaErrors(cudaDeviceSynchronize());
@@ -629,8 +632,8 @@ bool projToCylinderImage_cuda(std::vector<ViewGPU> views,
 
 // __global__ void
 // ForwardProjToCylinder_kernel(float2* cylinder_coor,   // theta phi
-//                              CylinderGPU cyl, PinholeCameraGPU cam, int height,
-//                              int width) {
+//                              CylinderGPU cyl, PinholeCameraGPU cam, int
+//                              height, int width) {
 //     int pixelIdx     = threadIdx.x + blockIdx.x * blockDim.x;
 //     int total_thread = blockDim.x * gridDim.x;
 //     int totalPixel   = height * width;

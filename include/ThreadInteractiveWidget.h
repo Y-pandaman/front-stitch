@@ -2,7 +2,7 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-09 20:52:38
+ * @LastEditTime: 2024-05-20 15:12:42
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
@@ -10,12 +10,12 @@
 #ifndef CYLINDER_STITCHER_THREADINTERACTIVEWIDGET_H
 #define CYLINDER_STITCHER_THREADINTERACTIVEWIDGET_H
 
-#include "EcalBladeHeightSender.h"
-#include "EcalImageSender.h"
+#include "common/EcalBladeHeightSender.h"
 #include "can.pb.h"
-#include "innoreal_timer.hpp"
+#include "common/EcalImageSender.h"
 #include "interactiveimagewidget.h"
 #include "steering_angle.pb.h"
+#include "util/innoreal_timer.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <ecal/ecal.h>
@@ -62,16 +62,16 @@ public:
 
     bool startMainWorkerThread(int argc, char** argv);
 
-        /**
+    /**
      * 检查是否有新的图像数据可用
-     * 
+     *
      * 本函数用于查询系统或某个数据源中是否有新的图像数据可供使用。
-     * 
+     *
      * @param 无
      * @return bool 返回一个布尔值，若存在新的图像数据则为true，否则为false。
      */
     bool checkHaveNewImage() {
-        return have_new_image; // 返回是否有新的图像数据标志
+        return have_new_image;   // 返回是否有新的图像数据标志
     }
 
     InteractiveImageWidget* widget_ptr = nullptr;

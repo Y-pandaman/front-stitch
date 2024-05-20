@@ -1,10 +1,10 @@
 #ifndef __SEAM_FINDER__
 #define __SEAM_FINDER__
 
+#include "common/cylinder_stitcher.cuh"
 #include "cuda_runtime.h"
-#include "cylinder_stitcher.cuh"
-#include "math_utils.h"
 #include "omp.h"
+#include "util/math_utils.h"
 #include <algorithm>
 #include <cuda.h>
 #include <iostream>
@@ -24,14 +24,14 @@ const int2 search_seq[3] = {make_int2(0, 1), make_int2(1, 0), make_int2(-1, 0)};
 
 /**
  * 在给定的差异图像中搜索一条最小差异的缝。
- * 
+ *
  * @param diff 指向差异图像数据的指针，差异图像用于计算像素间的差异。
  * @param range 搜索范围，限制了在垂直方向上像素可以移动的范围。
  * @param prev_separate_line 前一帧分离线的集合，用于初始化搜索的起始位置。
  * @param separate_line 本次搜索得到的分离线集合，将结果添加到这个集合中。
  * @param height 图像的高度。
  * @param width 图像的宽度。
- * 
+ *
  * 函数使用动态编程的方法，从上到下搜索图像中的一条最小差异缝，并将缝的坐标记录在separate_line中。
  * 搜索过程依赖于前一帧的分离线（prev_separate_line）来初始化起始位置，并通过比较当前像素与周围像素的差异值来确定缝的方向。
  */
@@ -41,9 +41,9 @@ static inline void search_seam(DIFF_TYPE* diff, int range,
                                int width) {
     // 初始化搜索的起始位置为前一帧分离线的起始点
     int2 start_loc = make_int2(prev_separate_line[0], 0);
-    separate_line.emplace_back(start_loc.x); // 在分离线集合中添加起始点
-    int2 loc     = start_loc; // 当前位置
-    int last_idx = -1; // 记录上一步选择的方向，用于避免重复搜索
+    separate_line.emplace_back(start_loc.x);   // 在分离线集合中添加起始点
+    int2 loc = start_loc;                      // 当前位置
+    int last_idx = -1;   // 记录上一步选择的方向，用于避免重复搜索
 
     while (true) {
         // 计算下一步可能到达的3个位置中的最小差异值和方向
@@ -66,10 +66,10 @@ static inline void search_seam(DIFF_TYPE* diff, int range,
             }
         }
 
-        loc      = next_loc; // 更新位置
-        last_idx = idx; // 更新上一步选择的方向
+        loc      = next_loc;   // 更新位置
+        last_idx = idx;        // 更新上一步选择的方向
         if (last_idx == 0)
-            separate_line.emplace_back(loc.x); // 如果选择的是正向，则记录该点
+            separate_line.emplace_back(loc.x);   // 如果选择的是正向，则记录该点
 
         // 如果到达图像的倒数第二行，则记录该点并结束循环
         if (loc.y == height - 2) {

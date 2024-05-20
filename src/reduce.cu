@@ -1,7 +1,7 @@
-#include "cuda_utils.h"
-#include "helper_cuda.h"
-#include "math_utils.h"
 #include "reduce.cuh"
+#include "util/cuda_utils.h"
+#include "util/helper_cuda.h"
+#include "util/math_utils.h"
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <vector_functions.h>

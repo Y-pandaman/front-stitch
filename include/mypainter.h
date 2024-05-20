@@ -14,8 +14,8 @@
 #include "TagPosesSet.h"
 #include "TextSourceManager.h"
 #include "driveassistant.h"
-#include "math_utils.h"
 #include "shaders.h"
+#include "util/math_utils.h"
 #include <QCoreApplication>
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>

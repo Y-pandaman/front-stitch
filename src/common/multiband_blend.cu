@@ -1,5 +1,5 @@
-#include "cuda_utils.h"
-#include "multiband_blend.cuh"
+#include "common/multiband_blend.cuh"
+#include "util/cuda_utils.h"
 
 __device__ __constant__ float GauKernel[25] = {
     0.0039, 0.0156, 0.0234, 0.0156, 0.0039, 0.0156, 0.0625, 0.0938, 0.0625,
@@ -62,7 +62,8 @@ __global__ void fast_erode(uchar* seam_mask, uchar* mask, int radius,
 }
 
 /**
- * @brief 核心函数，用于将短整型三维数据转换回无符号字符三维数据，并应用掩码处理。
+ * @brief
+ * 核心函数，用于将短整型三维数据转换回无符号字符三维数据，并应用掩码处理。
  * @param src 指向短整型三维数据的指针。
  * @param dst 指向无符号字符三维数据的指针，为转换结果。
  * @param mask0 指向第一个掩码数组的指针。
@@ -70,7 +71,7 @@ __global__ void fast_erode(uchar* seam_mask, uchar* mask, int radius,
  * @param mask2 指向第三个掩码数组的指针。
  * @param height 图像的高度。
  * @param width 图像的宽度。
- * 
+ *
  * 该函数通过线程块和网格的组织方式，对输入的短整型图像数据进行并行处理，转换为无符号字符类型，
  * 并应用三个掩码数组来决定每个像素是否被处理。处理过程中，将短整型数据的范围从-32768到32767，
  * 转换为无符号字符的范围0到255，并且根据掩码值决定像素是否被最终输出。
@@ -81,7 +82,7 @@ __global__ void convertBack_kernel(short3* src, uchar3* dst, uchar* mask0,
     // 计算当前线程处理的像素索引和总计线程数
     int pixelIdx     = threadIdx.x + blockIdx.x * blockDim.x;
     int total_thread = blockDim.x * gridDim.x;
-    int totalPixel   = height * width; // 图像总像素数
+    int totalPixel   = height * width;   // 图像总像素数
 
     // 循环处理所有像素
     while (pixelIdx < totalPixel) {
@@ -99,7 +100,7 @@ __global__ void convertBack_kernel(short3* src, uchar3* dst, uchar* mask0,
         dst[pixelIdx].z = remian *
                           clamp((float)src[pixelIdx].z, 0.0f, 32767.0f) /
                           32767.0f * 255.0f;
-        
+
         // 更新处理的像素索引
         pixelIdx += total_thread;
     }
@@ -328,7 +329,7 @@ __global__ void PyrUp_kernel(short3* src, short3* dst, int height, int width) {
 
 /**
  * 在GPU上执行加权融合操作。
- * 
+ *
  * @param I0 输入图像1的像素值，类型为short3。
  * @param mask0 输入图像1的掩码，类型为short，用于指定像素的权重。
  * @param I1 输入图像2的像素值，类型为short3。
@@ -337,7 +338,7 @@ __global__ void PyrUp_kernel(short3* src, short3* dst, int height, int width) {
  * @param mask2 输入图像3的掩码，类型为short，用于指定像素的权重。
  * @param height 图像的高度。
  * @param width 图像的宽度。
- * 
+ *
  * 该函数通过加权融合三个输入图像的像素值来生成一个新的图像（通过修改I1参数实现），
  * 其中每个像素的权重由对应的mask参数指定。权重值被归一化到[0,1]范围内。
  * 无效的像素（总权重为0）在输出图像中被设为(0,0,0)。
@@ -358,9 +359,9 @@ __global__ void WeightedBlend_kernel(short3* I0, short* mask0, short3* I1,
         int y = pixelIdx / width;
 
         // 将掩码值转换为浮点数，并归一化到[0,1]范围。
-        float w0      = (float)mask0[pixelIdx] / 32767.0f;
-        float w1      = (float)mask1[pixelIdx] / 32767.0f;
-        float w2      = (float)mask2[pixelIdx] / 32767.0f;
+        float w0 = (float)mask0[pixelIdx] / 32767.0f;
+        float w1 = (float)mask1[pixelIdx] / 32767.0f;
+        float w2 = (float)mask2[pixelIdx] / 32767.0f;
         // 计算所有输入图像的总权重。
         float total_w = w0 + w1 + w2;
 
@@ -507,8 +508,9 @@ std::vector<SeamImageGPU> BlendPyramid(std::vector<SeamImageGPU> pyr_img0,
  * 将金字塔图像序列合并回单个图像。
  * 该函数首先通过上采样操作将金字塔的每一层（从倒数第二层开始）合并到其上一层，
  * 最后将合并后的金字塔底层图像转换回初始的圆柱图像格式。
- * 
- * @param blendedPyramid 包含已融合图像的金字塔。这些图像经过之前的处理，准备进行上采样合并。
+ *
+ * @param blendedPyramid
+ * 包含已融合图像的金字塔。这些图像经过之前的处理，准备进行上采样合并。
  * @param cylImages 包含三个圆柱图像和对应掩码的向量，用于最后的图像转换。
  */
 
@@ -530,10 +532,9 @@ void CollapsePyramid(std::vector<SeamImageGPU> blendedPyramid,
     }
 
     // 计算用于最终图像转换的线程块和线程数。
-    num_block = 
-        min(65535, (blendedPyramid[0].height * blendedPyramid[0].width +
-                    num_thread - 1) /
-                   num_thread);
+    num_block = min(65535, (blendedPyramid[0].height * blendedPyramid[0].width +
+                            num_thread - 1) /
+                               num_thread);
     // 调用convertBack_kernel核函数，将金字塔底层图像转换回圆柱图像格式。
     convertBack_kernel<<<num_block, num_thread>>>(
         blendedPyramid[0].image, cylImages[1].image, cylImages[0].mask,

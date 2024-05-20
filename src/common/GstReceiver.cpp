@@ -1,4 +1,4 @@
-#include "GstReceiver.h"
+#include "common/GstReceiver.h"
 
 /**
  * 初始化GstReceiver。

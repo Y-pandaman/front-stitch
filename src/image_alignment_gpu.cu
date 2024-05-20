@@ -2,11 +2,11 @@
 // Created by vradmin on 18-7-13.
 //
 
-#include "cuda_utils.h"
 #include "image_alignment_gpu.cuh"
-#include "innoreal_timer.hpp"
-#include "math_utils.h"
 #include "reduce.cuh"
+#include "util/cuda_utils.h"
+#include "util/innoreal_timer.hpp"
+#include "util/math_utils.h"
 // #include "test_JTJ.h"
 #include "x_gn_solver.cuh"
 #include <opencv2/imgproc/types_c.h>
@@ -253,10 +253,13 @@ __global__ void WarpSrcImgKernel(cv::cuda::PtrStep<float> warped_src_img,
 }
 
 /**
- * @brief 根据给定的参数，使用卷积的方式将源图像及其掩码映射到一个新的图像及其掩码上。
- * 
- * @param warped_src_img 映射后的源图像，为 uchar3 类型数组，其中包含 RGB 三通道颜色信息。
- * @param warped_src_mask 映射后的源图像掩码，为 uchar 类型数组，用于标识像素是否有效。
+ * @brief
+ * 根据给定的参数，使用卷积的方式将源图像及其掩码映射到一个新的图像及其掩码上。
+ *
+ * @param warped_src_img 映射后的源图像，为 uchar3 类型数组，其中包含 RGB
+ * 三通道颜色信息。
+ * @param warped_src_mask 映射后的源图像掩码，为 uchar
+ * 类型数组，用于标识像素是否有效。
  * @param src_img 源图像，为 uchar3 类型数组，其中包含 RGB 三通道颜色信息。
  * @param src_mask 源图像掩码，为 uchar 类型数组，用于标识像素是否有效。
  * @param pixel_num 图像中像素的数量。
@@ -282,10 +285,10 @@ __global__ void WarpSrcImgKernel(uchar3* warped_src_img, uchar* warped_src_mask,
     int row = pixel_idx / img_cols;
     int col = pixel_idx % img_cols;
     // 计算四个角落像素在数组中的索引
-    int tl  = 4 * pixel_idx;
-    int tr  = 4 * pixel_idx + 1;
-    int bl  = 4 * pixel_idx + 2;
-    int br  = 4 * pixel_idx + 3;
+    int tl = 4 * pixel_idx;
+    int tr = 4 * pixel_idx + 1;
+    int bl = 4 * pixel_idx + 2;
+    int br = 4 * pixel_idx + 3;
 
     // 根据权重和节点信息计算当前像素的映射位置
     float2 warped_pixel =
@@ -326,10 +329,10 @@ __global__ void WarpSrcImgKernel(uchar3* warped_src_img, uchar* warped_src_mask,
         float coef_01  = coef_x_0 * (1 - coef_y_0);
         float coef_11  = (1 - coef_x_0) * (1 - coef_y_0);
         // 获取四个相邻像素的颜色值
-        uchar3 val_00  = src_img[pixel_idx_00];
-        uchar3 val_10  = src_img[pixel_idx_10];
-        uchar3 val_01  = src_img[pixel_idx_01];
-        uchar3 val_11  = src_img[pixel_idx_11];
+        uchar3 val_00 = src_img[pixel_idx_00];
+        uchar3 val_10 = src_img[pixel_idx_10];
+        uchar3 val_01 = src_img[pixel_idx_01];
+        uchar3 val_11 = src_img[pixel_idx_11];
         // 使用插值计算当前像素的颜色
         float3 rgb =
             coef_00 * make_float3((int)val_00.x, (int)val_00.y, (int)val_00.z) +

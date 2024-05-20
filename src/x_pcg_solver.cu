@@ -1,5 +1,5 @@
-#include "cuda_utils.h"
-#include "helper_cuda.h"
+#include "util/cuda_utils.h"
+#include "util/helper_cuda.h"
 #include "x_pcg_solver.cuh"
 #include <thrust/device_ptr.h>
 #include <thrust/inner_product.h>
@@ -361,7 +361,6 @@ __global__ void SparseMvKernel(SparseMvWrapper spmv_wrapper) {
     // 每个线程将处理矩阵中的一部分元素与向量的乘法加法操作。
     spmv_wrapper();   // 直接调用传递的包装器对象，执行稀疏矩阵向量乘法的具体计算。
 }
-
 
 /**
  * PcgLinearSolverGPU的构造函数

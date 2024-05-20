@@ -1,9 +1,9 @@
 #ifndef GALAHOLOSYSTEM_REDUCE_H
 #define GALAHOLOSYSTEM_REDUCE_H
 
-#include "helper_cuda.h"
-#include "math_utils.h"
 #include "nz_block_statistics.cuh"
+#include "util/helper_cuda.h"
+#include "util/math_utils.h"
 #include <device_launch_parameters.h>
 #include <opencv2/opencv.hpp>
 
@@ -55,8 +55,9 @@ CalcBilinearCoefs(float& coef_00, float& coef_10, float& coef_01,
 
 /**
  * 在给定的图像上，使用双线性插值计算指定点的梯度值。
- * 
- * @param img 指向图像数据的cuda::PtrStepSz<float>对象，包含图像的宽度、高度和数据。
+ *
+ * @param img
+ * 指向图像数据的cuda::PtrStepSz<float>对象，包含图像的宽度、高度和数据。
  * @param x 想要计算梯度的点的x坐标（浮点数）。
  * @param y 想要计算梯度的点的y坐标（浮点数）。
  * @return 计算得到的梯度值。如果坐标超出图像边界或像素值异常，则返回0.0f。
