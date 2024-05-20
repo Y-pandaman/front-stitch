@@ -1,19 +1,5 @@
 #include "core/FrontStitcherMain.h"
-#include "common/EcalImageSender.h"
-#include "common/GstReceiver.h"
-#include "common/cylinder_stitcher.cuh"
-#include "common/cylinder_stitcher.h"
-#include "stage/ThreadInteractiveWidget.h"
-#include "stage/interactiveimagewidget.h"
-#include "util/innoreal_timer.hpp"
-#include <Eigen/Eigen>
-#include <QApplication>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <opencv2/core/eigen.hpp>
-#include <opencv2/imgcodecs/legacy/constants_c.h>
-#include <stack>
+
 
 // #define TEST_YOLO
 

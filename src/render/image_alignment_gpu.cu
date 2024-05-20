@@ -1,44 +1,10 @@
-﻿#include "calc/reduce.cuh"
+﻿#include "reduce.cuh"
 #include "render/image_alignment_gpu.cuh"
 #include "util/cuda_utils.h"
 #include "util/innoreal_timer.hpp"
 #include "util/math_utils.h"
-#include "calc/x_gn_solver.cuh"
+#include "x_gn_solver.cuh"
 #include <opencv2/imgproc/types_c.h>
-
-inline float GetPixelValueBilinear(cv::Mat& img, float x, float y) {
-    int x_0 = (int)x;
-    int y_0 = (int)y;
-    int x_1 = x_0 + 1;
-    int y_1 = y_0 + 1;
-
-    if (x_0 < 0 || y_0 < 0 || x_1 >= img.cols || y_1 >= img.rows)
-        return 65535.0f;   // invalid
-
-    float coef_x_0 = x_1 - x;
-    float coef_y_0 = y_1 - y;
-
-    float coef_00 = coef_x_0 * coef_y_0;
-    float coef_10 = (1 - coef_x_0) * coef_y_0;
-    float coef_01 = coef_x_0 * (1 - coef_y_0);
-    float coef_11 = (1 - coef_x_0) * (1 - coef_y_0);
-
-    float val_00 = img.at<float>(y_0, x_0);
-    if (val_00 > 2.0f || val_00 < -2.0f)
-        return 65535.0f;
-    float val_10 = img.at<float>(y_0, x_1);
-    if (val_10 > 2.0f || val_10 < -2.0f)
-        return 65535.0f;
-    float val_01 = img.at<float>(y_1, x_0);
-    if (val_01 > 2.0f || val_01 < -2.0f)
-        return 65535.0f;
-    float val_11 = img.at<float>(y_1, x_1);
-    if (val_11 > 2.0f || val_11 < -2.0f)
-        return 65535.0f;
-
-    return coef_00 * val_00 + coef_01 * val_01 + coef_10 * val_10 +
-           coef_11 * val_11;
-}
 
 /**
  * ImageAlignmentCUDA的构造函数

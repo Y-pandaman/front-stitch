@@ -2,7 +2,6 @@
 
 //#define OUTPUT_CYL_IMAGE
 
-#include "common/cylinder_stitcher.h"
 #include "util/math_utils.h"
 #include "util/cuda_utils.h"
 #include <opencv2/opencv.hpp>
@@ -33,43 +32,12 @@ struct PinholeCameraGPU {
         C  = _C;
     }
 
-    void printIntrin() {
-        printf("fx = %f, fy = %f, cx = %f, cy = %f\n", fx, fy, cx, cy);
-        printf("d0 = %f, d1 = %f, d2 = %f, d3 = %f\n", d0, d1, d2, d3);
-    }
-
     void free() {
         if (R != nullptr) {
             cudaFree(R);
             cudaFree(T);
             cudaFree(C);
         }
-    }
-
-    void showPara() {
-        float *R_, *T_, *C_;
-        cudaHostAlloc((void**)&R_, sizeof(float) * 9, cudaHostAllocDefault);
-        cudaHostAlloc((void**)&T_, sizeof(float) * 3, cudaHostAllocDefault);
-        cudaHostAlloc((void**)&C_, sizeof(float) * 3, cudaHostAllocDefault);
-
-        cudaMemcpy(R_, R, sizeof(float) * 9, cudaMemcpyDeviceToHost);
-        cudaMemcpy(T_, T, sizeof(float) * 3, cudaMemcpyDeviceToHost);
-        cudaMemcpy(C_, C, sizeof(float) * 3, cudaMemcpyDeviceToHost);
-
-        printf("fx: %f  fy: %f Cx: %f Cy: %f\n", fx, fy, cx, cy);
-        printf("Rotation:\n");
-        for (int i = 0; i < 3; i++) {
-            printf("%f %f %f\n", R_[3 * i], R_[3 * i + 1], R_[3 * i + 2]);
-        }
-        printf("Translation Vector:\n");
-        printf("%f %f %f\n", T_[0], T_[1], T_[2]);
-
-        printf("Camera Center:\n");
-        printf("%f %f %f\n", C_[0], C_[1], C_[2]);
-
-        cudaFreeHost(R_);
-        cudaFreeHost(T_);
-        cudaFreeHost(C_);
     }
 
     inline __device__ float3 rotateVector(float3 v) {
@@ -597,9 +565,6 @@ public:
     std::vector<uchar*> seam_masks_;
     std::vector<float4*> novel_view_intrins_;
     std::vector<float3*> novel_view_extrin_Rs_;
-
-    Cylinder h_cyl_;
-    std::vector<PinholeCamera> cameras_;
     std::vector<float4> h_novel_view_intrins_;
     std::vector<float3> h_novel_view_extrin_Rs_;
 
