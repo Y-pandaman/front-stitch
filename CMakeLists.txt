@@ -6,9 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-Wall -fPIC -Ofast")
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-ADD_SUBDIRECTORY(./ar_vis)
 
 find_package(OpenGL REQUIRED)
 find_package(CUDA REQUIRED)
@@ -31,13 +32,23 @@ include_directories(
 	"/usr/include/eigen3/"
 	${FREETYPE_INCLUDE_DIRS}
 	${eCAL_INCLUDE_DIRS}
-	"ar_vis"
+	${CUDA_INCLUDE_DIRS}
 	"./build"
 )
 
 CUDA_ADD_EXECUTABLE(cylinder_stitcher_example src/main.cpp)
 
-CUDA_ADD_LIBRARY(front_stitcher_main SHARED
+SET(HEADER_FILES
+	include/driveassistant.h
+	include/interactiveimagewidget.h
+	include/mypainter.h
+	include/EcalBladeHeightSender.h
+	include/TextSourceManager.h
+	include/Model.h
+	include/BladeModelTransformer.h
+)
+
+SET(SOURCE_FILES
 	src/FrontStitcherMain.cpp
 	src/EcalImageSender.cpp
 	src/GstReceiver.cpp
@@ -54,11 +65,30 @@ CUDA_ADD_LIBRARY(front_stitcher_main SHARED
 	src/project_to_cylinder.cu
 	src/seam_finder.cu
 	src/multiband_blend.cu
-	src/render.cu)
+	src/render.cu
+	src/driveassistant.cpp
+	src/interactiveimagewidget.cpp
+	src/mypainter.cpp
+	src/shaders.cpp
+	src/track.cpp
+	src/TextSourceManager.cpp
+	src/Model.cpp
+	src/ThreadInteractiveWidget.cpp
+	src/BladeModelTransformer.cpp
+	src/Config.cpp
+	src/EcalBladeHeightSender.cpp
+)
+
+CUDA_ADD_LIBRARY(front_stitcher_main SHARED
+	${HEADER_FILES} ${SOURCE_FILES} ${RESOURCES})
 
 set(protobuf_files
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/lane_line.proto
+	${CMAKE_CURRENT_SOURCE_DIR}/proto/steering_angle.proto
+	${CMAKE_CURRENT_SOURCE_DIR}/proto/blade_message.proto
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/image.proto
+	${CMAKE_CURRENT_SOURCE_DIR}/proto/can.proto
+	${CMAKE_CURRENT_SOURCE_DIR}/proto/blade_height.proto
 )
 
 protobuf_target_cpp(front_stitcher_main proto ${protobuf_files})
@@ -73,7 +103,6 @@ target_link_libraries(
 	Qt5::Widgets Qt5::OpenGL Qt5::Gui Qt5::Core
 	${CUDA_LIBRARIES}
 	${CUDA_cusparse_LIBRARY}
-	ar_vis
 	${OPENGL_glu_LIBRARY}
 	${OpenCV_LIBS}
 	${ASSIMP_LIBRARIES}

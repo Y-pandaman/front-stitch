@@ -9,4 +9,6 @@ message BladeInput{
     int32 theta = 4;
     int32 l_IJ = 5;
     int32 l_ncnd = 6;
+
+    bool set_zero_height = 7;
 }

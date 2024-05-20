@@ -17,6 +17,7 @@ public:
     ~EcalImageSender();
 
     void open(const std::string& topic);
+
     void pubImage(cv::Mat image);
 
 private:
