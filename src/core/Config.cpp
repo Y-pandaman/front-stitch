@@ -2,12 +2,12 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-20 11:35:23
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-20 13:59:24
+ * @LastEditTime: 2024-05-20 16:27:22
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
  */
-#include "Config.h"
+#include "core/Config.h"
 
 bool Config::load_config_file(const std::string& file_path) {
     cv::FileStorage fs;

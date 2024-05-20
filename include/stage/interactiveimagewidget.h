@@ -1,10 +1,10 @@
 #ifndef INTERACTIVEIMAGEWIDGET_H
 #define INTERACTIVEIMAGEWIDGET_H
 
-#include "driveassistant.h"
 #include "lane_line.pb.h"
-#include "mypainter.h"
-#include "shaders.h"
+#include "stage/driveassistant.h"
+#include "render/mypainter.h"
+#include "render/shaders.h"
 #include "util/innoreal_timer.hpp"
 #include <Eigen/Eigen>
 #include <QMatrix4x4>

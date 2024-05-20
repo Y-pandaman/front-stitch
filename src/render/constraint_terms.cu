@@ -1,8 +1,8 @@
-#include "constraint_terms.cuh"
-#include "reduce.cuh"
+#include "render/constraint_terms.cuh"
+#include "render/reduce.cuh"
+#include "render/x_gn_solver.cuh"
 #include "util/cuda_utils.h"
 #include "util/helper_cuda.h"
-#include "x_gn_solver.cuh"
 #include <device_launch_parameters.h>
 
 /**

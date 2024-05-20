@@ -36,46 +36,46 @@ include_directories(
 	"./build"
 )
 
-CUDA_ADD_EXECUTABLE(cylinder_stitcher_example src/main.cpp)
+CUDA_ADD_EXECUTABLE(cylinder_stitcher_example src/core/main.cpp)
 
 SET(HEADER_FILES
 	include/stage/driveassistant.h
 	include/stage/interactiveimagewidget.h
-	include/mypainter.h
+	include/render/mypainter.h
 	include/common/EcalBladeHeightSender.h
 	include/stage/TextSourceManager.h
-	include/Model.h
-	include/BladeModelTransformer.h
+	include/render/Model.h
+	include/render/BladeModelTransformer.h
 )
 
 SET(SOURCE_FILES
-	src/FrontStitcherMain.cpp
+	src/core/FrontStitcherMain.cpp
 	src/common/EcalImageSender.cpp
 	src/common/GstReceiver.cpp
 	src/yolo/yolo.cpp
 	src/yolo/yolo_detect.cpp
 	src/util/loguru.cpp
 	src/common/cylinder_stitcher.cu
-	src/image_alignment_gpu.cu
-	src/nz_block_statistics.cu
-	src/x_gn_solver.cu
-	src/constraint_terms.cu
-	src/reduce.cu
-	src/x_pcg_solver.cu
-	src/project_to_cylinder.cu
-	src/seam_finder.cu
+	src/render/image_alignment_gpu.cu
+	src/render/nz_block_statistics.cu
+	src/render/x_gn_solver.cu
+	src/render/constraint_terms.cu
+	src/render/reduce.cu
+	src/render/x_pcg_solver.cu
+	src/render/project_to_cylinder.cu
+	src/render/seam_finder.cu
 	src/common/multiband_blend.cu
 	src/common/render.cu
 	src/stage/driveassistant.cpp
 	src/stage/interactiveimagewidget.cpp
-	src/mypainter.cpp
-	src/shaders.cpp
-	src/track.cpp
+	src/render/mypainter.cpp
+	src/render/shaders.cpp
+	src/render/track.cpp
 	src/stage/TextSourceManager.cpp
-	src/Model.cpp
+	src/render/Model.cpp
 	src/stage/ThreadInteractiveWidget.cpp
-	src/BladeModelTransformer.cpp
-	src/Config.cpp
+	src/render/BladeModelTransformer.cpp
+	src/core/Config.cpp
 	src/common/EcalBladeHeightSender.cpp
 )
 

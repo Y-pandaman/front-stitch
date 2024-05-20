@@ -1,8 +1,8 @@
 #ifndef CYLINDER_STITCHER_BLADEMODELTRANSFORMER_H
 #define CYLINDER_STITCHER_BLADEMODELTRANSFORMER_H
 
-#include "Config.h"
-#include "Model.h"
+#include "core/Config.h"
+#include "render/Model.h"
 #include <Eigen/Eigen>
 #include <QMatrix4x4>
 #include <QVector2D>

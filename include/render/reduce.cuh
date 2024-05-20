@@ -7,16 +7,6 @@
 #include <device_launch_parameters.h>
 #include <opencv2/opencv.hpp>
 
-#ifdef __JETBRAINS_IDE__
-#define __host__
-#define __device__
-#define __global__
-#define __foreinline__
-#define __shared__
-
-inline void __sycthreads() { }
-#endif
-
 /**
  * 计算双线性插值的系数
  *
@@ -159,82 +149,6 @@ inline __host__ __device__ float3 operator*(float a, uchar4& b) {
     res.z = (int)b.z * a;
 
     return res;
-}
-__device__ __forceinline__ uchar4 GetPixelValueBilinearFillZero(
-    cv::cuda::PtrStepSz<uchar4> img, float x, float y) {
-    int x_0 = (int)x;
-    int y_0 = (int)y;
-    int x_1 = x_0 + 1;
-    int y_1 = y_0 + 1;
-
-    if (x_0 < 0 || y_0 < 0 || x_1 >= img.cols || y_1 >= img.rows)
-        return make_uchar4((uchar)0, (uchar)0, (uchar)0, (uchar)0);
-
-    float coef_x_0 = x_1 - x;
-    float coef_y_0 = y_1 - y;
-
-    float coef_00 = coef_x_0 * coef_y_0;
-    float coef_10 = (1 - coef_x_0) * coef_y_0;
-    float coef_01 = coef_x_0 * (1 - coef_y_0);
-    float coef_11 = (1 - coef_x_0) * (1 - coef_y_0);
-
-    uchar4 val_00 = img.ptr(y_0)[x_0];
-    if (val_00.x == 0 && val_00.y == 0 && val_00.z == 0)
-        return make_uchar4((uchar)0, (uchar)0, (uchar)0, (uchar)0);
-    uchar4 val_10 = img.ptr(y_0)[x_1];
-    if (val_10.x == 0 && val_10.y == 0 && val_10.z == 0)
-        return make_uchar4((uchar)0, (uchar)0, (uchar)0, (uchar)0);
-    uchar4 val_01 = img.ptr(y_1)[x_0];
-    if (val_01.x == 0 && val_01.y == 0 && val_01.z == 0)
-        return make_uchar4((uchar)0, (uchar)0, (uchar)0, (uchar)0);
-    uchar4 val_11 = img.ptr(y_1)[x_1];
-    if (val_11.x == 0 && val_11.y == 0 && val_11.z == 0)
-        return make_uchar4((uchar)0, (uchar)0, (uchar)0, (uchar)0);
-
-    float3 pixel_rgb = coef_00 * val_00 + coef_01 * val_01 + coef_10 * val_10 +
-                       coef_11 * val_11;
-    uchar4 res;
-    res.x = (int)pixel_rgb.x;
-    res.y = (int)pixel_rgb.y;
-    res.z = (int)pixel_rgb.z;
-    res.w = (int)0;
-    return res;
-}
-__device__ __forceinline__ float
-GetPixelValueBilinearFillZero(cv::cuda::PtrStepSz<float> img, float x,
-                              float y) {
-    int x_0 = (int)x;
-    int y_0 = (int)y;
-    int x_1 = x_0 + 1;
-    int y_1 = y_0 + 1;
-
-    if (x_0 < 0 || y_0 < 0 || x_1 >= img.cols || y_1 >= img.rows)
-        return 0.0f;
-
-    float coef_x_0 = x_1 - x;
-    float coef_y_0 = y_1 - y;
-
-    float coef_00 = coef_x_0 * coef_y_0;
-    float coef_10 = (1 - coef_x_0) * coef_y_0;
-    float coef_01 = coef_x_0 * (1 - coef_y_0);
-    float coef_11 = (1 - coef_x_0) * (1 - coef_y_0);
-
-    float val_00 = img.ptr(y_0)[x_0];
-    if (val_00 > 2.0)
-        return 0.0f;
-    float val_10 = img.ptr(y_0)[x_1];
-    if (val_10 > 2.0)
-        return 0.0f;
-    float val_01 = img.ptr(y_1)[x_0];
-    if (val_01 > 2.0)
-        return 0.0f;
-    float val_11 = img.ptr(y_1)[x_1];
-    if (val_11 > 2.0)
-        return 0.0f;
-
-    float pixel_rgb = coef_00 * val_00 + coef_01 * val_01 + coef_10 * val_10 +
-                      coef_11 * val_11;
-    return pixel_rgb;
 }
 
 void CalcDataTermJTJ(float* d_JTJ_a, int* d_JTJ_ia, cv::cuda::GpuMat& d_dx_img,

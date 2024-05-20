@@ -1,4 +1,4 @@
-#include "seam_finder.cuh"
+#include "render/seam_finder.cuh"
 
 /**
  * 在GPU上计算三个圆柱图像之间的差异。

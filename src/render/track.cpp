@@ -1,4 +1,13 @@
-#include "track.h"
+/*
+ * @Author: 姚潘涛
+ * @Date: 2024-05-20 11:35:23
+ * @LastEditors: 姚潘涛
+ * @LastEditTime: 2024-05-20 16:26:37
+ * @Description:
+ *
+ * Copyright (c) 2024 by pandaman, All Rights Reserved.
+ */
+#include "render/track.h"
 #include <utility>
 
 Track::Track(int _loc, float _radius, float _mid_radius, float _width,

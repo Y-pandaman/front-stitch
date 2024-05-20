@@ -1,4 +1,4 @@
-#include "mypainter.h"
+#include "render/mypainter.h"
 
 /**
  * MyPainter的构造函数

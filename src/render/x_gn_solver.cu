@@ -1,12 +1,12 @@
-#include "constraint_terms.cuh"
-#include "nz_block_statistics.cuh"
-#include "reduce.cuh"
+#include "render/constraint_terms.cuh"
+#include "render/nz_block_statistics.cuh"
+#include "render/reduce.cuh"
+#include "render/x_gn_solver.cuh"
+#include "render/x_pcg_solver.cuh"
 #include "util/cuda_utils.h"
 #include "util/helper_cuda.h"
 #include "util/innoreal_timer.hpp"
 #include "util/math_utils.h"
-#include "x_gn_solver.cuh"
-#include "x_pcg_solver.cuh"
 #include <device_launch_parameters.h>
 #include <math_functions.h>
 #include <thrust/fill.h>

@@ -2,14 +2,11 @@
  * @Author: 姚潘涛
  * @Date: 2024-05-08 10:14:32
  * @LastEditors: 姚潘涛
- * @LastEditTime: 2024-05-20 15:51:25
+ * @LastEditTime: 2024-05-20 16:10:55
  * @Description:
  *
  * Copyright (c) 2024 by pandaman, All Rights Reserved.
  */
-//
-// Created by touch on 22-11-1.
-//
 
 #ifndef DRAW_TRACK_TRACK_H
 #define DRAW_TRACK_TRACK_H

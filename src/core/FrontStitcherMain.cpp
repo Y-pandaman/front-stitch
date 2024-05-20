@@ -1,4 +1,4 @@
-#include "FrontStitcherMain.h"
+#include "core/FrontStitcherMain.h"
 #include "common/EcalImageSender.h"
 #include "common/GstReceiver.h"
 #include "common/cylinder_stitcher.cuh"

@@ -1,4 +1,4 @@
-#include "BladeModelTransformer.h"
+#include "render/BladeModelTransformer.h"
 
 std::vector<QVector3D> BladeModelTransformer::trilateration(const QVector3D& P1,
                                                             const QVector3D& P2,

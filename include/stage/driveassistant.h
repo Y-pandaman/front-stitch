@@ -10,10 +10,10 @@
 #ifndef DRIVEASSISTANT_H
 #define DRIVEASSISTANT_H
 
-#include "BladeModelTransformer.h"
-#include "Config.h"
-#include "Model.h"
-#include "track.h"
+#include "core/Config.h"
+#include "render/BladeModelTransformer.h"
+#include "render/Model.h"
+#include "render/track.h"
 #include <QDebug>
 #include <QVector2D>
 #include <cmath>

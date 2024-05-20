@@ -2,8 +2,8 @@
 // Created by vradmin on 18-7-13.
 //
 
-#include "image_alignment_gpu.cuh"
 #include "reduce.cuh"
+#include "render/image_alignment_gpu.cuh"
 #include "util/cuda_utils.h"
 #include "util/innoreal_timer.hpp"
 #include "util/math_utils.h"
