@@ -21,11 +21,11 @@
 #include "yolo_detect.h"
 #endif
 
-// #define USE_VIDEO_INPUT
+#define USE_VIDEO_INPUT
 
 int frontStitcherMain(int argc, char** argv) {
 #ifdef TEST_YOLO
-    yolo_detect::YoloDetect yolo_detector("../example/weights/best.onnx", true);
+    yolo_detect::YoloDetect yolo_detector("../assets/weights/best.onnx", true);
 #endif
 
     // 实例化一个ThreadInteractiveWidget对象
@@ -53,14 +53,14 @@ int frontStitcherMain(int argc, char** argv) {
     Eigen::Matrix4f
         ref_camera_pose;   // 参考相机的姿态（旋转和平移），选择中间视图作为参考
 
-    std::filesystem::path yamls_dir("../example/yamls");
-    std::filesystem::path video_dir("../assets/test_video1");
+    std::filesystem::path yamls_dir("../assets/yamls");
+    std::filesystem::path video_dir("../assets/test_video2");
 
     for (int camera_idx = 0; camera_idx < view_num; ++camera_idx) {
         Eigen::Matrix3f K;
         Eigen::Vector4f D;
         // 读取相机内参
-        std::filesystem::path fs_path("../example/yamls");
+        std::filesystem::path fs_path("../assets/yamls");
         fs_path.append("camera_" + std::to_string(camera_name_map[camera_idx]) +
                        "_intrin.yaml");
         cv::FileStorage fs;
@@ -119,7 +119,7 @@ int frontStitcherMain(int argc, char** argv) {
             std::string fs_file_name =
                 "camera_extrin_" + std::to_string(mid_camera_name) + "_and_" +
                 std::to_string(camera_name) + ".yaml";
-            std::filesystem::path fs_file_path("../example/yamls");
+            std::filesystem::path fs_file_path("../assets/yamls");
             fs_file_path.append(fs_file_name);
             cv::FileStorage fs;
             if (!fs.open(fs_file_path, cv::FileStorage::Mode::READ)) {

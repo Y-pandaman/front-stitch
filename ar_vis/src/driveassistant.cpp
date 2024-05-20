@@ -26,7 +26,7 @@ DriveAssistant::DriveAssistant(float wheel_w_dis_, float wheel_h_dis_,
     turning_direction          = 1;
     cv::FileStorage fs;
     track_delta_yaml_path =
-        std::filesystem::path("../example/yamls/track_delta.yaml");
+        std::filesystem::path("../assets/yamls/track_delta.yaml");
     // 尝试打开轨迹偏差配置文件
     if (!fs.open(track_delta_yaml_path, cv::FileStorage::READ)) {
         printf("cannot open %s\n", track_delta_yaml_path.c_str());

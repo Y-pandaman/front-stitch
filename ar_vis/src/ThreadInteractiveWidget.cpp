@@ -95,7 +95,7 @@ void ThreadInteractiveWidget::mainWorker(int argc, char** argv) {
     // 初始化相机和平面的位姿
     Eigen::Matrix4f camera_pose = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f plane_pose  = Eigen::Matrix4f::Identity();
-    std::filesystem::path yamls_dir("../example/yamls");
+    std::filesystem::path yamls_dir("../assets/yamls");
     // 读取相机内参
     cv::FileStorage fs_undistort_intrin;
     std::filesystem::path undistort_intrin_path(yamls_dir);
@@ -148,7 +148,7 @@ void ThreadInteractiveWidget::mainWorker(int argc, char** argv) {
                         track_length_, track_width_);
     w.setWheelTheta(0);
     // 加载地面矩阵配置
-    std::string filepath("../example/yamls/ground.yaml");
+    std::string filepath("../assets/yamls/ground.yaml");
     if (!fs.open(filepath, cv::FileStorage::READ)) {
         printf("cannot open %s\n", filepath.c_str());
         return;

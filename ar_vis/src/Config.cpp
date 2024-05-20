@@ -1,3 +1,12 @@
+/*
+ * @Author: 姚潘涛
+ * @Date: 2024-05-20 11:35:23
+ * @LastEditors: 姚潘涛
+ * @LastEditTime: 2024-05-20 13:59:24
+ * @Description:
+ *
+ * Copyright (c) 2024 by pandaman, All Rights Reserved.
+ */
 #include "Config.h"
 
 bool Config::load_config_file(const std::string& file_path) {
@@ -54,7 +63,7 @@ QVector3D Config::convertToQVector3D(const cv::Mat& input) {
 }
 
 Config::Config() {
-    load_config_file("../example/yamls/config.yaml");
+    load_config_file("../assets/yamls/config.yaml");
 }
 
 Config config;
