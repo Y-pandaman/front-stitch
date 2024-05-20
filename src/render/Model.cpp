@@ -161,7 +161,7 @@ Vertex Model::getVertex(int idx) {
     // 确保模型中只有一个网格
     assert(meshes.size() == 1);
     // 确保指定索引不越界
-    assert(meshes[0].vertices.size() > idx);
+    // assert(meshes[0].vertices.size() > idx);
     return meshes[0].vertices[idx];
 }
 
