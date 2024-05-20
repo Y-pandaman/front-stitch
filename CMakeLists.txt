@@ -20,6 +20,7 @@ find_package(Freetype REQUIRED)
 find_package(eCAL REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(assimp REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 if(OPENMP_FOUND)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -28,12 +29,11 @@ if(OPENMP_FOUND)
 endif()
 
 include_directories(
-	include/
-	"/usr/include/eigen3/"
+	include
+	${EIGEN3_INCLUDE_DIRS}
 	${FREETYPE_INCLUDE_DIRS}
 	${eCAL_INCLUDE_DIRS}
 	${CUDA_INCLUDE_DIRS}
-	"./build"
 )
 
 CUDA_ADD_EXECUTABLE(cylinder_stitcher_example src/core/main.cpp)
@@ -107,6 +107,6 @@ target_link_libraries(
 	${OpenCV_LIBS}
 	${ASSIMP_LIBRARIES}
 	eCAL::core
-	glog
+	# glog
 	${FREETYPE_LIBRARIES}
 )

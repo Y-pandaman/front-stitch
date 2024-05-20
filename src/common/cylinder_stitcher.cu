@@ -452,7 +452,7 @@ void CylinderStitcherGPU::stitch_project_to_cyn(int time) {
 
         // 遍历所有视图，获取视图边界位置
         std::vector<std::vector<int2>> boundary_locs;
-        for (int i = 0; i < views_.size(); ++i) {
+        for (uint64_t i = 0; i < views_.size(); ++i) {
             cv::Mat h_mask(views_[i].height, views_[i].width, CV_8UC1);
             cudaMemcpy(h_mask.data, views_[i].mask,
                        sizeof(uchar) * views_[i].height * views_[i].width,

@@ -1,6 +1,6 @@
 %YAML:1.0
 ---
-blade_model_path : "/home/bdca/3505_ply"      # 铲刀模型保存路径
+blade_model_path : "../assets/3505_ply"      # 铲刀模型保存路径
 model_type : ".ply"                                   # 铲刀模型文件类型, .obj or .ply
 
 front_wheel_center : !!opencv-matrix                  # 前轮相对于相机安装位置投影的坐标(即不考虑高度)，模型测量得到

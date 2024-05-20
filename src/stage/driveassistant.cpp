@@ -31,7 +31,7 @@ DriveAssistant::DriveAssistant(float wheel_w_dis_, float wheel_h_dis_,
     if (!fs.open(track_delta_yaml_path, cv::FileStorage::READ)) {
         printf("cannot open %s\n", track_delta_yaml_path.c_str());
     } else {
-        // 读取轨迹偏差参数（当前代码段被注释）
+        // 读取轨迹偏差参数
     }
 
     // 初始化铲刀模型变换器参数

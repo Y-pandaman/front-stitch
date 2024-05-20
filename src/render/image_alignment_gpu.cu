@@ -1,9 +1,9 @@
-﻿#include "reduce.cuh"
+﻿#include "calc/reduce.cuh"
 #include "render/image_alignment_gpu.cuh"
 #include "util/cuda_utils.h"
 #include "util/innoreal_timer.hpp"
 #include "util/math_utils.h"
-#include "x_gn_solver.cuh"
+#include "calc/x_gn_solver.cuh"
 #include <opencv2/imgproc/types_c.h>
 
 /**
