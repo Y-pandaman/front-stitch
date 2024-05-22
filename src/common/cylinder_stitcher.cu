@@ -1,12 +1,12 @@
-﻿#include "common/cylinder_stitcher.cuh"
-#include "common/multiband_blend.cuh"
-#include "common/render.cuh"
-#include "render/image_alignment_gpu.cuh"
+﻿#include "render/image_alignment_gpu.cuh"
 #include "render/project_to_cylinder.cuh"
 #include "render/seam_finder.cuh"
 #include "util/cuda_utils.h"
+#include "common/cylinder_stitcher.cuh"
 #include "util/innoreal_timer.hpp"
 #include "util/math_utils.h"
+#include "common/multiband_blend.cuh"
+#include "common/render.cuh"
 #include <Eigen/Eigen>
 #include <fstream>
 #include <opencv2/opencv.hpp>

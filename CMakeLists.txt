@@ -85,7 +85,6 @@ CUDA_ADD_LIBRARY(front_stitcher_main SHARED
 set(protobuf_files
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/lane_line.proto
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/steering_angle.proto
-	${CMAKE_CURRENT_SOURCE_DIR}/proto/blade_message.proto
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/image.proto
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/can.proto
 	${CMAKE_CURRENT_SOURCE_DIR}/proto/blade_height.proto
@@ -107,6 +106,5 @@ target_link_libraries(
 	${OpenCV_LIBS}
 	${ASSIMP_LIBRARIES}
 	eCAL::core
-	# glog
 	${FREETYPE_LIBRARIES}
 )

@@ -3,11 +3,11 @@
 
 #include "common/cylinder_stitcher.cuh"
 #include "cuda_runtime.h"
-#include "render/project_to_cylinder.cuh"
 #include <cuda.h>
 #include <iostream>
 #include <thrust/extrema.h>
 #include <vector>
+#define CLOSE_ZERO 1.0e-6
 
 static inline __device__ void get_intrinsic(float& fx, float& fy, float& cx,
                                             float& cy, float image_theta_range,
@@ -55,10 +55,6 @@ static inline __device__ float3 rotateVector(float3 X_axis, float3 Y_axis,
                        Y_axis.x * v.x + Y_axis.y * v.y + Y_axis.z * v.z,
                        Z_axis.x * v.x + Z_axis.y * v.y + Z_axis.z * v.z);
 }
-
-// __host__ void BlendExtraViewToScreen_cuda(uchar3* dst_cyl_img,
-//                                           uchar3* src_cyl_img, int width,
-//                                           int height, float w);
 
 __host__ void BlendExtraViewToScreen4Channels_cuda(uchar3* dst_cyl_img,
                                                    uchar4* src_cyl_img,

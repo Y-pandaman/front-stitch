@@ -9,7 +9,7 @@
 #include <thrust/extrema.h>
 #include <vector>
 
-#define CLOSE_ZERO 1.0e-6
+
 // #define STEP 0.002f
 
 bool proj4ChannelsExtraViewToCylinderImage_cuda(

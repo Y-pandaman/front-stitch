@@ -355,20 +355,6 @@ __global__ void render_kernel(float4* intrin, float4* center_view_intrin,
     }
 }
 
-// __host__ void BlendExtraViewToScreen_cuda(uchar3* dst_cyl_img,
-//                                           uchar3* src_cyl_img, int width,
-//                                           int height, float w) {
-//     int num_thread = 512;
-//     int num_block  = min(65535, (height * width + num_thread - 1) /
-//     num_thread);
-
-//     blend_extra_view_kernel<<<num_block, num_thread>>>(dst_cyl_img,
-//     src_cyl_img,
-//                                                        width, height, w);
-//     checkCudaErrors(cudaDeviceSynchronize());
-//     checkCudaErrors(cudaGetLastError());
-// }
-
 /**
  * 在CUDA平台上，将额外视图的四个通道融合到屏幕图像上。
  *

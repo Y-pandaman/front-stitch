@@ -32,6 +32,11 @@ struct PinholeCameraGPU {
         C  = _C;
     }
 
+    void printIntrin() {
+        printf("fx = %f, fy = %f, cx = %f, cy = %f\n", fx, fy, cx, cy);
+        printf("d0 = %f, d1 = %f, d2 = %f, d3 = %f\n", d0, d1, d2, d3);
+    }
+
     void free() {
         if (R != nullptr) {
             cudaFree(R);
